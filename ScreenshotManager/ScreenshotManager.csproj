@@ -52,7 +52,7 @@
 			<HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\UnityEngine.UI.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.UIModule">
-		  <HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
+			<HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\UnityEngine.UIModule.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.UnityWebRequestModule">
 			<HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
@@ -65,9 +65,6 @@
 		</Reference>
 		<Reference Include="VRChatUtilityKit">
 			<HintPath>D:\Steam\steamapps\common\VRChat\Mods\VRChatUtilityKit.dll</HintPath>
-		</Reference>
-		<Reference Include="VRCSDKBase">
-			<HintPath>D:\Steam\steamapps\common\VRChat\MelonLoader\Managed\VRCSDKBase.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 
