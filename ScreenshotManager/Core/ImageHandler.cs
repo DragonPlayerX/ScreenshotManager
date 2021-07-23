@@ -133,7 +133,8 @@ namespace ScreenshotManager.Core
         {
             if (currentIndex < currentActiveFiles.Length)
             {
-                ScreenshotManagerMod.Enqueue(new Action(() => MelonCoroutines.Start(LoadImage(currentActiveFiles[currentIndex].FullName, singleViewImage))));
+                string file = currentActiveFiles[currentIndex].FullName;
+                MelonCoroutines.Start(LoadImage(file, singleViewImage));
             }
             else
             {
@@ -151,7 +152,7 @@ namespace ScreenshotManager.Core
                 {
                     string file = currentActiveFiles[i].FullName;
                     RawImage image = multiViewImages[i - currentIndex];
-                    ScreenshotManagerMod.Enqueue(new Action(() => MelonCoroutines.Start(LoadImage(file, image))));
+                    MelonCoroutines.Start(LoadImage(file, image));
                 }
                 else
                 {
@@ -304,7 +305,7 @@ namespace ScreenshotManager.Core
                 if (currentIndex >= currentActiveFiles.Length)
                     currentIndex = 0;
 
-                Update(true);
+                ScreenshotManagerMod.Enqueue(new Action(() => Update(true)));
                 isReloading = false;
             });
         }

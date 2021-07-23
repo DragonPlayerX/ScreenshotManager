@@ -14,14 +14,14 @@ using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.0.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.0.1", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.0.0";
+        public static readonly string Version = "1.0.1";
 
         public static ScreenshotManagerMod Instance;
 
