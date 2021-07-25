@@ -14,16 +14,16 @@ using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.0.1", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.1.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.0.1";
+        public static readonly string Version = "1.1.0";
 
-        public static ScreenshotManagerMod Instance;
+        public static ScreenshotManagerMod Instance { get; private set; }
 
         public static Queue<Action> pendingActions = new Queue<Action>();
 
@@ -37,18 +37,23 @@ namespace ScreenshotManager
             if (!File.Exists("Executables/DiscordWebhook.exe"))
             {
                 if (!Directory.Exists("Executables"))
-                {
                     Directory.CreateDirectory("Executables");
-                }
                 ExtractResource();
             }
             else
             {
                 MelonLogger.Msg("Validating checksums of external resources...");
                 if (!CompareChecksums())
-                {
                     ExtractResource();
-                }
+            }
+
+            if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value))
+                Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value);
+
+            FileOrganization.PatchMethod();
+            if (Configuration.FileOrganizationEntry.Value)
+            {
+                FileOrganization.OrganizeAll();
             }
 
             ClassInjector.RegisterTypeInIl2Cpp<EnableDisableListener>();
@@ -83,9 +88,7 @@ namespace ScreenshotManager
                 foreach (Action action in actions)
                 {
                     if (action != null)
-                    {
                         action.Invoke();
-                    }
                 }
             }
         }
@@ -116,7 +119,6 @@ namespace ScreenshotManager
                 builder.Append(bytes[i].ToString("x2"));
             }
             return builder.ToString();
-
         }
 
         private static void ExtractResource()

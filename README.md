@@ -10,13 +10,18 @@
 - View all your Screenshots directly ingame
 - View only pictures you made today (configurable hour offset)
 - Single and page mode (also you can enlarge an image by clicking on it)
-- Image operations:
+- Tab and UIX button available (fallback button for no UIX in camera menu)
+- Image Operations:
     - Move picture to favorite folder (this is a subdirectory in the default screenshot folder)
     - Open Windows Explorer and select image
     - Delete picture (with confirm)
     - Share picture via Discord Webhook (requires setup in config)
-
-By default the tab button is enabled but it can be moved to the camera quickmenu.
+- File Organization:
+    - Change the location where VRChat Screenshots are saved. (compatible with [LagFreeScreenshots](https://github.com/knah/VRCMods/tree/master/LagFreeScreenshots))
+    - Automatic sorting of new screenshots by placing them in subfolders named by the current day
+        - You are able to convert old screenshots to the folders by pressing a button in the menu
+        - You can revert the organization and move all images back to the main folder
+        - You can customize the naming of directories and files in MelonPreferences file
 
 ### Menu Screenshot
 
@@ -25,6 +30,10 @@ By default the tab button is enabled but it can be moved to the camera quickmenu
 ## Texture loading
 
 You may experience a little bit of lag when going through your pictures (only really noticeable in multi view or with high resolution screenshots).
+
+## File Organization
+
+Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore. 
 
 ## Discord Webhook
  

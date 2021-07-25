@@ -9,6 +9,9 @@ namespace ScreenshotManager.Config
         private static readonly MelonPreferences_Category Category = MelonPreferences.CreateCategory("ScreenshotManager", "Screenshot Manager");
 
         public static MelonPreferences_Entry<string> ScreenshotDirectoryEntry;
+        public static MelonPreferences_Entry<bool> FileOrganizationEntry;
+        public static MelonPreferences_Entry<string> FileOrganizationFolderEntry;
+        public static MelonPreferences_Entry<string> FileOrganizationFileEntry;
         public static MelonPreferences_Entry<string> DiscordWebhookURLEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookSetUsernameEntry;
@@ -16,21 +19,26 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> DiscordWebhookSetMessageEntry;
         public static MelonPreferences_Entry<string> DiscordWebhookMessageEntry;
         public static MelonPreferences_Entry<bool> TabButtonEntry;
-        public static MelonPreferences_Entry<int> TodayHourOffset;
+        public static MelonPreferences_Entry<bool> UseUIXEntry;
+        public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
 
         public static bool hasChanged;
 
         public static void Init()
         {
             ScreenshotDirectoryEntry = CreateEntry("ScreenshotDirectory", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "\\VRChat", "Screenshot Directory");
+            FileOrganizationEntry = CreateEntry("FileOrganization", false, "Enable File Organization");
+            FileOrganizationFolderEntry = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
+            FileOrganizationFileEntry = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
             DiscordWebhookURLEntry = CreateEntry("DiscordWebhookURL", "Replace with Webhook link", "URL to Discord Webhook");
             DiscordWebhookEntry = CreateEntry("DiscordWebHook", false, "Enable Discord Webhook");
-            DiscordWebhookSetUsernameEntry = CreateEntry("DiscordWebhookSetUsernameEntry", true, "Enable Webhook Name");
-            DiscordWebhookUsernameEntry = CreateEntry("DiscordWebhookUsernameEntry", "{vrcname}", "Webhook Name");
-            DiscordWebhookSetMessageEntry = CreateEntry("DiscordWebhookSetMessageEntry", true, "Enable Webhook Message");
-            DiscordWebhookMessageEntry = CreateEntry("DiscordWebhookMessageEntry", "New Screenshot by {vrcname} - Picture taken at: {creationtime}", "Webhook Message");
+            DiscordWebhookSetUsernameEntry = CreateEntry("DiscordWebhookSetUsername", true, "Enable Webhook Name");
+            DiscordWebhookUsernameEntry = CreateEntry("DiscordWebhookUsername", "{vrcname}", "Webhook Name");
+            DiscordWebhookSetMessageEntry = CreateEntry("DiscordWebhookSetMessage", true, "Enable Webhook Message");
+            DiscordWebhookMessageEntry = CreateEntry("DiscordWebhookMessage", "New Screenshot by {vrcname} - Picture taken at: {creationtime}", "Webhook Message");
             TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled", "false = button appears in camera menu");
-            TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
+            UseUIXEntry = CreateEntry("UseUIX", false, "Use UIX", "Moves button from camera menu to UIX");
+            TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
         }
 
         public static void Save()

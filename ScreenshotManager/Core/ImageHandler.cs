@@ -214,7 +214,19 @@ namespace ScreenshotManager.Core
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
                 if (fileInfo.Directory.Name.Equals("Favorites"))
                 {
-                    File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/" + fileInfo.Name);
+                    if (Configuration.FileOrganizationEntry.Value)
+                    {
+                        DateTime creationTime = fileInfo.LastWriteTime;
+                        string directory = Configuration.ScreenshotDirectoryEntry.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolderEntry.Value);
+                        if (!Directory.Exists(directory))
+                            Directory.CreateDirectory(directory);
+                        string newFile = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFileEntry.Value) + fileInfo.Extension;
+                        File.Move(fileInfo.FullName, newFile);
+                    }
+                    else
+                    {
+                        File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/" + fileInfo.Name);
+                    }
                     await ReloadFiles();
                     Update(false);
                 }
@@ -286,20 +298,20 @@ namespace ScreenshotManager.Core
                 if (currentCategory == ImageMenuCategory.TODAY)
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                    DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffset.Value);
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.TopDirectoryOnly).Where(f => Extensions.Any(f.Extension.EndsWith) && f.CreationTime >= dateTime).OrderBy(f => f.CreationTime).ToArray();
+                    DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value);
+                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && f.LastWriteTime >= dateTime).OrderBy(f => f.LastWriteTime).ToArray();
                 }
                 else if (currentCategory == ImageMenuCategory.FAVORITES)
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
                     if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites"))
                         Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.TopDirectoryOnly).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.CreationTime).ToArray();
+                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.LastWriteTime).ToArray();
                 }
                 else
                 {
                     DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.TopDirectoryOnly).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.CreationTime).ToArray();
+                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => f.LastWriteTime).ToArray();
                 }
 
                 if (currentIndex >= currentActiveFiles.Length)

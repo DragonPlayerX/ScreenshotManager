@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using UnhollowerRuntimeLib;
 using VRChatUtilityKit.Components;
 using VRChatUtilityKit.Utilities;
 using VRChatUtilityKit.Ui;
+using UIExpansionKit.API;
 
 using Object = UnityEngine.Object;
 
@@ -21,6 +24,7 @@ namespace ScreenshotManager.Core
 
         private static TabButton tabButton;
         private static SingleButton menuButton;
+        private static GameObject uixButton;
 
         public static List<SubMenu> menus = new List<SubMenu>();
 
@@ -57,18 +61,49 @@ namespace ScreenshotManager.Core
 
         public static void CreateMenus()
         {
-            menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenu0"));
+            menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuMain"));
+            menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuOrganization"));
+            menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuSettings"));
 
             tabButton = new TabButton(menuRect.Find("Version/Image").GetComponent<Image>().sprite, menus[0]);
             tabButton.ButtonComponent.onClick.AddListener(new Action(() => tabButton.OpenTabMenu()));
             tabButton.gameObject.SetActive(Configuration.TabButtonEntry.Value);
 
-            menuButton = new SingleButton("UserInterface/QuickMenu/CameraMenu", new Vector3(4, 2), "Screenshot Manager", new Action(() => tabButton.OpenTabMenu()), "Open Screenshot Manager", "ScreenshotManagerButton", true, Color.yellow);
+            bool desktopCameraFound = MelonHandler.Mods.Any(mod => mod.Info.Name == "DesktopCamera");
+
+            menuButton = new SingleButton("UserInterface/QuickMenu/CameraMenu", desktopCameraFound ? new Vector3(5, 4) : new Vector3(4, 2), "Screenshot Manager", new Action(() => tabButton.OpenTabMenu()), "Open Screenshot Manager", "ScreenshotManagerButton", true, Color.yellow);
             menuButton.gameObject.SetActive(!Configuration.TabButtonEntry.Value);
+
+            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "UI Expansion Kit"))
+            {
+                ExpansionKitApi.GetExpandedMenu(ExpandedMenu.QuickMenu).AddSimpleButton("Screenshot Manager", new Action(() => menus[0].OpenSubMenu()), new Action<GameObject>(gameObject =>
+                {
+                    uixButton = gameObject;
+                    gameObject.SetActive(Configuration.UseUIXEntry.Value && !Configuration.TabButtonEntry.Value);
+                }));
+                Configuration.UseUIXEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+                {
+                    if (!Configuration.TabButtonEntry.Value)
+                    {
+                        uixButton.SetActive(newValue);
+                        menuButton.gameObject.SetActive(!newValue);
+                    }
+                });
+            }
+
+            // Fix for emmVRC UI color change
+
+            Color uiColor = menuButton.gameObject.GetComponent<Button>().colors.normalColor;
+
+            menuRect.Find("Background").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
+            menuRect.Find("Background (1)").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
+
+            // Main menu
 
             List<ElementBase> buttons = new List<ElementBase>();
 
             buttons.Add(new SingleButton(menus[0].Path, new Vector3(5, 2), "Back", new Action(() => UiManager.OpenSubMenu("UserInterface/QuickMenu/ShortcutMenu")), "Press to go back", "BackButton", true, Color.yellow));
+            buttons.Add(new SingleButton(menus[0].Path, new Vector3(5, 0), "Settings", new Action(() => menus[2].OpenSubMenu()), "Open Settings", "SettingsMenuButton", true));
 
             ToggleButton viewButton = new ToggleButton(menus[0].Path, new Vector3(5, 1), "Multi View", "Single View", new Action<bool>(state =>
             {
@@ -85,19 +120,21 @@ namespace ScreenshotManager.Core
                 }
 
             }), "Change Image View", "Change Image View", "ViewButton", false, true);
+
             buttons.Add(viewButton);
 
-            buttons.Add(new ToggleButton(menus[0].Path, new Vector3(5, 0), "Tab Button", "Menu Button", new Action<bool>(state =>
-            {
-                Configuration.TabButtonEntry.Value = state;
-                tabButton.gameObject.SetActive(state);
-                menuButton.gameObject.SetActive(!state);
-            }), "Change Button Type", "Change Button Type", "ButtonTypeButton", Configuration.TabButtonEntry.Value, true));
-
-            buttons.Add(new ToggleButton(menus[0].Path, new Vector3(0, 1), "Discord Webhook", "Disabled", new Action<bool>(state =>
+            ToggleButton discordWebhookToggleButton = new ToggleButton(menus[0].Path, new Vector3(0, 1), "Discord Webhook", "Disabled", new Action<bool>(state =>
             {
                 Configuration.DiscordWebhookEntry.Value = state;
-            }), "Enable/Disable Discord Webhook", "Enable/Disable Discord Webhook", "DiscordWebhookButton", Configuration.DiscordWebhookEntry.Value, true));
+            }), "Enable/Disable Discord Webhook", "Enable/Disable Discord Webhook", "DiscordWebhookButton", Configuration.DiscordWebhookEntry.Value, true);
+            Configuration.DiscordWebhookEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                discordWebhookToggleButton.State = newValue;
+            });
+
+            buttons.Add(discordWebhookToggleButton);
+
+            buttons.Add(new SingleButton(menus[0].Path, new Vector3(0, 0), "File Organization", new Action(() => menus[1].OpenSubMenu()), "Open File Organization Menu", "OrganizationMenuButton", true));
 
             HalfButton favoriteButton = new HalfButton(menus[0].Path, new Vector3(2, 2), new Vector3(0.5f, 0), "Favorite", new Action(ImageHandler.MovePicture), "Favorite", "FavoriteButton", true);
 
@@ -181,9 +218,9 @@ namespace ScreenshotManager.Core
             }), "Share", "ShareButton", true));
             buttons.Add(new SingleButton(menus[0].Path, new Vector3(4, 2), "Next", new Action(ImageHandler.Next), "Next", "NextButton", true));
 
-            Animator animator = menuRect.Find("SingleViewImage").GetComponent<Animator>();
+            Animator animator = singleViewObject.GetComponent<Animator>();
 
-            menuRect.Find("SingleViewImage").GetComponent<Button>().onClick.AddListener(new Action(() =>
+            singleViewObject.GetComponent<Button>().onClick.AddListener(new Action(() =>
             {
                 if (imageScaled)
                 {
@@ -219,6 +256,77 @@ namespace ScreenshotManager.Core
                 deleteCancelButton.gameObject.SetActive(false);
                 buttons.ForEach(button => button.gameObject.SetActive(true));
                 ImageHandler.Update(false);
+                menuUI.SetActive(false);
+                newElements.SetActive(true);
+            });
+
+            // Organization menu
+
+            new SingleButton(menus[1].Path, new Vector3(4, 2), "Back", new Action(() => menus[0].OpenSubMenu()), "Press to go back", "BackButton", true, Color.yellow);
+
+            ToggleButton organizationToggleButton = new ToggleButton(menus[1].Path, new Vector3(1, 0), "File Organization", "Disabled", new Action<bool>(state =>
+            {
+                Configuration.FileOrganizationEntry.Value = state;
+            }), "Disable File Organization", "Enable File Organization", "FileOrganizationButton", Configuration.FileOrganizationEntry.Value, true);
+            Configuration.FileOrganizationEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                organizationToggleButton.State = newValue;
+            });
+
+            new SingleButton(menus[1].Path, new Vector3(2, 0), "Manually Organize", new Action(() =>
+            {
+                if (Configuration.FileOrganizationEntry.Value)
+                    FileOrganization.OrganizeAll();
+                else
+                    UiManager.OpenSmallPopup("Action required", "Please enable File Organisation.", "Ok", new Action(UiManager.ClosePopup));
+            }), "Organize all pictures (can cause lag)", "ManuallyFileOrganizationButton", true);
+
+            new SingleButton(menus[1].Path, new Vector3(3, 0), "Reset Organization", new Action(() => FileOrganization.Reset()), "Reset Organization (can cause lag)", "ResetOrganizationButton", true, Color.red);
+
+            EnableDisableListener organizeMenuListener = menus[1].gameObject.AddComponent<EnableDisableListener>();
+
+            organizeMenuListener.OnEnableEvent += new Action(() =>
+            {
+                menuUI.SetActive(false);
+                newElements.SetActive(true);
+            });
+
+            // Settings menu
+
+            new SingleButton(menus[2].Path, new Vector3(4, 2), "Back", new Action(() => menus[0].OpenSubMenu()), "Press to go back", "BackButton", true, Color.yellow);
+
+            ToggleButton menuOptionToggleButton = new ToggleButton(menus[2].Path, new Vector3(1, 0), "Tab Button", "Menu Button", new Action<bool>(state =>
+            {
+                Configuration.TabButtonEntry.Value = state;
+            }), "Change Button Type", "Change Button Type", "ButtonTypeButton", Configuration.TabButtonEntry.Value, true);
+            Configuration.TabButtonEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                menuOptionToggleButton.State = newValue;
+                tabButton.gameObject.SetActive(newValue);
+                if (uixButton != null)
+                {
+                    uixButton.SetActive(!newValue && Configuration.UseUIXEntry.Value);
+                    menuButton.gameObject.SetActive(!newValue && !Configuration.UseUIXEntry.Value);
+                }
+                else
+                {
+                    menuButton.gameObject.SetActive(!newValue);
+                }
+            });
+
+            ToggleButton useUIXToggleButton = new ToggleButton(menus[2].Path, new Vector3(2, 0), "Use UIX", "Disabled", new Action<bool>(state =>
+            {
+                Configuration.UseUIXEntry.Value = state;
+            }), "Change Button Type", "Change Button Type", "ButtonTypeButton", Configuration.UseUIXEntry.Value, true);
+            Configuration.UseUIXEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                useUIXToggleButton.State = newValue;
+            });
+
+            EnableDisableListener optionMenuListener = menus[2].gameObject.AddComponent<EnableDisableListener>();
+
+            optionMenuListener.OnEnableEvent += new Action(() =>
+            {
                 menuUI.SetActive(false);
                 newElements.SetActive(true);
             });
