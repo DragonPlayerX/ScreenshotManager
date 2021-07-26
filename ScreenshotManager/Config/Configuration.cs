@@ -12,8 +12,8 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> FileOrganizationEntry;
         public static MelonPreferences_Entry<string> FileOrganizationFolderEntry;
         public static MelonPreferences_Entry<string> FileOrganizationFileEntry;
-        public static MelonPreferences_Entry<string> DiscordWebhookURLEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookEntry;
+        public static MelonPreferences_Entry<string> DiscordWebhookURLEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookSetUsernameEntry;
         public static MelonPreferences_Entry<string> DiscordWebhookUsernameEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookSetMessageEntry;
@@ -21,6 +21,8 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> TabButtonEntry;
         public static MelonPreferences_Entry<bool> UseUIXEntry;
         public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
+        public static MelonPreferences_Entry<bool> MultiViewEntry;
+        public static MelonPreferences_Entry<int> LastCategoryEntry;
 
         public static bool hasChanged;
 
@@ -30,15 +32,17 @@ namespace ScreenshotManager.Config
             FileOrganizationEntry = CreateEntry("FileOrganization", false, "Enable File Organization");
             FileOrganizationFolderEntry = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
             FileOrganizationFileEntry = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
-            DiscordWebhookURLEntry = CreateEntry("DiscordWebhookURL", "Replace with Webhook link", "URL to Discord Webhook");
             DiscordWebhookEntry = CreateEntry("DiscordWebHook", false, "Enable Discord Webhook");
+            DiscordWebhookURLEntry = CreateEntry("DiscordWebhookURL", "Replace with Webhook link", "URL to Discord Webhook");
             DiscordWebhookSetUsernameEntry = CreateEntry("DiscordWebhookSetUsername", true, "Enable Webhook Name");
             DiscordWebhookUsernameEntry = CreateEntry("DiscordWebhookUsername", "{vrcname}", "Webhook Name");
             DiscordWebhookSetMessageEntry = CreateEntry("DiscordWebhookSetMessage", true, "Enable Webhook Message");
             DiscordWebhookMessageEntry = CreateEntry("DiscordWebhookMessage", "New Screenshot by {vrcname} - Picture taken at: {creationtime}", "Webhook Message");
-            TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled", "false = button appears in camera menu");
+            TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled");
             UseUIXEntry = CreateEntry("UseUIX", false, "Use UIX", "Moves button from camera menu to UIX");
             TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
+            MultiViewEntry = CreateEntry("MultiView", false, "MultiView Enabled");
+            LastCategoryEntry = CreateEntry("LastCategory", 1, "Last Category");
         }
 
         public static void Save()

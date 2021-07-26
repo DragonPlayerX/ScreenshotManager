@@ -43,26 +43,28 @@ namespace ScreenshotManager.Core
 
         private static readonly string[] Extensions = new string[] { ".png", ".jpeg" };
 
-        private static ImageMenuCategory currentCategory = ImageMenuCategory.TODAY;
+        private static ImageMenuCategory currentCategory;
         public static Text titleText;
         public static Text infoText;
 
         private static RawImage singleViewImage;
         private static RawImage[] multiViewImages = new RawImage[9];
 
+        private static Texture2D errorTexture;
+
         private static FileInfo[] currentActiveFiles;
         private static int currentIndex = 0;
 
-        public static bool multiView = false;
-
-        public static bool isReloading = false;
+        public static bool isReloading { get; private set; } = false;
 
         public static void Init()
         {
+            currentCategory = (ImageMenuCategory)Configuration.LastCategoryEntry.Value;
             titleText = MenuManager.menuRect.Find("Title").GetComponent<Text>();
             infoText = MenuManager.menuRect.Find("Info").GetComponent<Text>();
-            titleText.text = "Today's Pictures";
             singleViewImage = MenuManager.singleViewObject.GetComponent<RawImage>();
+            errorTexture = MenuManager.menuRect.Find("ErrorTextureHolder").GetComponent<Image>().sprite.texture;
+
             Button.ButtonClickedEvent toggleViewAction = MenuManager.menus[0].RectTransform.Find("ViewButton").GetComponent<Button>().onClick;
             for (int i = 1; i <= 9; i++)
             {
@@ -84,8 +86,8 @@ namespace ScreenshotManager.Core
         {
             if (isReloading)
                 return;
-            if (currentIndex + (multiView ? 9 : 1) < currentActiveFiles.Length)
-                currentIndex += (multiView ? 9 : 1);
+            if (currentIndex + (Configuration.MultiViewEntry.Value ? 9 : 1) < currentActiveFiles.Length)
+                currentIndex += (Configuration.MultiViewEntry.Value ? 9 : 1);
             else
                 currentIndex = 0;
             Update(true);
@@ -95,11 +97,11 @@ namespace ScreenshotManager.Core
         {
             if (isReloading)
                 return;
-            if (currentIndex - (multiView ? 9 : 1) >= 0)
-                currentIndex -= (multiView ? 9 : 1);
+            if (currentIndex - (Configuration.MultiViewEntry.Value ? 9 : 1) >= 0)
+                currentIndex -= (Configuration.MultiViewEntry.Value ? 9 : 1);
             else
             {
-                currentIndex = multiView ? ((currentActiveFiles.Length - 1) / 9) * 9 : currentActiveFiles.Length - 1;
+                currentIndex = Configuration.MultiViewEntry.Value ? ((currentActiveFiles.Length - 1) / 9) * 9 : currentActiveFiles.Length - 1;
                 if (currentIndex < 0)
                     currentIndex = 0;
             }
@@ -114,7 +116,7 @@ namespace ScreenshotManager.Core
 
         public static void Update(bool fetchImages)
         {
-            if (multiView)
+            if (Configuration.MultiViewEntry.Value)
                 infoText.text = (currentIndex / 9 + 1) + "/" + ((currentActiveFiles.Length - 1) / 9 + 1);
             else
                 infoText.text = (currentIndex + 1) + "/" + currentActiveFiles.Length;
@@ -123,7 +125,7 @@ namespace ScreenshotManager.Core
 
             if (!fetchImages)
                 return;
-            if (multiView)
+            if (Configuration.MultiViewEntry.Value)
                 FetchCurrentImages();
             else
                 FetchCurrentImage();
@@ -178,6 +180,14 @@ namespace ScreenshotManager.Core
                 else
                     rawImage.transform.localScale = new Vector3(1, 1, 1);
             }
+            else
+            {
+                MelonLogger.Warning("Failed to load image: " + file);
+                DestroyTexture(rawImage);
+                rawImage.color = new Color(1, 1, 1, 1);
+                rawImage.texture = errorTexture;
+                rawImage.transform.localScale = new Vector3(1, 1, 1);
+            }
         }
 
         private static void DestroyTexture(RawImage rawImage)
@@ -185,7 +195,10 @@ namespace ScreenshotManager.Core
             rawImage.color = new Color(1, 1, 1, 0.1f);
             if (rawImage.texture != null)
             {
-                Object.Destroy(rawImage.texture);
+                if (!rawImage.texture.Equals(errorTexture))
+                {
+                    Object.Destroy(rawImage.texture);
+                }
                 rawImage.texture = null;
             }
         }
@@ -194,13 +207,14 @@ namespace ScreenshotManager.Core
         {
             if (category == currentCategory)
                 return;
-
             if (isReloading)
                 return;
 
             IndexCache[currentCategory] = currentIndex;
 
             currentCategory = category;
+
+            Configuration.LastCategoryEntry.Value = Array.IndexOf(Enum.GetValues(typeof(ImageMenuCategory)), currentCategory);
 
             titleText.text = Titles[currentCategory];
             currentIndex = IndexCache[currentCategory];
@@ -212,6 +226,11 @@ namespace ScreenshotManager.Core
             if (currentActiveFiles.Length > 0 && !isReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
+                if (!File.Exists(fileInfo.FullName))
+                {
+                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    return;
+                }
                 if (fileInfo.Directory.Name.Equals("Favorites"))
                 {
                     if (Configuration.FileOrganizationEntry.Value)
@@ -228,7 +247,6 @@ namespace ScreenshotManager.Core
                         File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/" + fileInfo.Name);
                     }
                     await ReloadFiles();
-                    Update(false);
                 }
                 else
                 {
@@ -238,7 +256,6 @@ namespace ScreenshotManager.Core
                     }
                     File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/Favorites/" + fileInfo.Name);
                     await ReloadFiles();
-                    Update(false);
                 }
             }
         }
@@ -248,9 +265,14 @@ namespace ScreenshotManager.Core
             if (currentActiveFiles.Length > 0 && !isReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
+                if (!File.Exists(fileInfo.FullName))
+                {
+                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    Update(false);
+                    return;
+                }
                 File.Delete(fileInfo.FullName);
                 await ReloadFiles();
-                Update(false);
             }
         }
 
@@ -258,7 +280,13 @@ namespace ScreenshotManager.Core
         {
             if (currentIndex < currentActiveFiles.Length && !isReloading)
             {
-                Process.Start("explorer.exe", "/select, \"" + currentActiveFiles[currentIndex].FullName + "\""); ;
+                FileInfo fileInfo = currentActiveFiles[currentIndex];
+                if (!File.Exists(fileInfo.FullName))
+                {
+                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    return;
+                }
+                Process.Start("explorer.exe", "/select, \"" + fileInfo.FullName + "\""); ;
             }
         }
 
@@ -267,6 +295,11 @@ namespace ScreenshotManager.Core
             if (currentIndex < currentActiveFiles.Length && !isReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
+                if (!File.Exists(fileInfo.FullName))
+                {
+                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    return;
+                }
                 MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord Webhook...");
                 string username = Configuration.DiscordWebhookSetUsernameEntry.Value ? (Configuration.DiscordWebhookUsernameEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
                 string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.CreationTime.ToString("MM.dd.yyyy HH:mm:ss"))) : "null";

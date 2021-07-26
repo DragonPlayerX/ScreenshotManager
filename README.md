@@ -35,6 +35,8 @@ You may experience a little bit of lag when going through your pictures (only re
 
 Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore. 
 
+If you used the PhotoOrganization Mod before you may encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> "Reset Organization" and than click "Manually Organization". The mod will reset all things (restore filenames and deleting old folders) and than create new folders and move the files.
+
 ## Discord Webhook
  
 You can enable the Discord Webhook (disabled by default) directly ingame or in the MelonPreferences file. You have to provide an Webhook URL and maybe change some other stuff.

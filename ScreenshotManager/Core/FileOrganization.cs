@@ -43,14 +43,32 @@ namespace ScreenshotManager.Core
             MelonLogger.Msg("Resetting organization...");
             DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
             FileInfo[] files = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => !f.Directory.Name.Equals("Favorites") && !Configuration.ScreenshotDirectoryEntry.Value.EndsWith(f.Directory.Name)).ToArray();
+            int movedFiles = 0;
             foreach (FileInfo file in files)
             {
                 DateTime creationTime = file.LastWriteTime;
                 string newFile = Configuration.ScreenshotDirectoryEntry.Value + "/VRChat_" + creationTime.ToString("yyyy-MM-dd_HH-mm-ss.fff") + file.Extension;
-                File.Move(file.FullName, newFile);
+                if (!File.Exists(newFile))
+                {
+                    File.Move(file.FullName, newFile);
+                    movedFiles++;
+                }
             }
 
-            MelonLogger.Msg("Moved " + files.Length + " files back to main directory.");
+            MelonLogger.Msg("Moved " + movedFiles + " files back to main directory.");
+
+            DirectoryInfo[] directories = directoryInfo.EnumerateDirectories().Where(d => !d.Name.Equals("Favorites")).ToArray();
+            int deletedDirectories = 0;
+            foreach (DirectoryInfo directoryToDelete in directories)
+            {
+                if (!Directory.EnumerateFileSystemEntries(directoryToDelete.FullName).Any())
+                {
+                    Directory.Delete(directoryToDelete.FullName);
+                    deletedDirectories++;
+                }
+            }
+
+            MelonLogger.Msg("Deleted " + deletedDirectories + " empty folders.");
         }
 
         public static void PatchMethod()

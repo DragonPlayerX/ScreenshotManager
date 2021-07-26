@@ -53,8 +53,9 @@ namespace ScreenshotManager.Core
             menuRect.Find("Version/Text").GetComponent<Text>().text = "Version\n" + ScreenshotManagerMod.Version;
 
             singleViewObject = menuRect.Find("SingleViewImage").gameObject;
-            singleViewObject.SetActive(true);
+            singleViewObject.SetActive(!Configuration.MultiViewEntry.Value);
             multiViewObject = menuRect.Find("MultiView").gameObject;
+            multiViewObject.SetActive(Configuration.MultiViewEntry.Value);
 
             menuUI.SetActive(false);
         }
@@ -76,7 +77,7 @@ namespace ScreenshotManager.Core
 
             if (MelonHandler.Mods.Any(mod => mod.Info.Name == "UI Expansion Kit"))
             {
-                ExpansionKitApi.GetExpandedMenu(ExpandedMenu.QuickMenu).AddSimpleButton("Screenshot Manager", new Action(() => menus[0].OpenSubMenu()), new Action<GameObject>(gameObject =>
+                ExpansionKitApi.GetExpandedMenu(ExpandedMenu.CameraQuickMenu).AddSimpleButton("Screenshot Manager", new Action(() => menus[0].OpenSubMenu()), new Action<GameObject>(gameObject =>
                 {
                     uixButton = gameObject;
                     gameObject.SetActive(Configuration.UseUIXEntry.Value && !Configuration.TabButtonEntry.Value);
@@ -107,19 +108,18 @@ namespace ScreenshotManager.Core
 
             ToggleButton viewButton = new ToggleButton(menus[0].Path, new Vector3(5, 1), "Multi View", "Single View", new Action<bool>(state =>
             {
-                ImageHandler.multiView = state;
-                singleViewObject.SetActive(!state);
-                multiViewObject.SetActive(state);
-                if (state)
-                {
+                Configuration.MultiViewEntry.Value = state;
+            }), "Change Image View", "Change Image View", "ViewButton", Configuration.MultiViewEntry.Value, true);
+            Configuration.MultiViewEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                viewButton.State = newValue;
+                singleViewObject.SetActive(!newValue);
+                multiViewObject.SetActive(newValue);
+                if (newValue)
                     ImageHandler.SetMultiView();
-                }
                 else
-                {
                     ImageHandler.Update(true);
-                }
-
-            }), "Change Image View", "Change Image View", "ViewButton", false, true);
+            });
 
             buttons.Add(viewButton);
 
@@ -188,16 +188,19 @@ namespace ScreenshotManager.Core
             buttons.Add(favoriteButton);
             buttons.Add(new HalfButton(menus[0].Path, new Vector3(2, 2), new Vector3(0.5f, 1), "Delete", new Action(() =>
             {
-                buttons.ForEach(button => button.gameObject.SetActive(false));
-                if (viewButton.State)
+                if (!ImageHandler.isReloading)
                 {
-                    viewButton.State = false;
-                    viewButton.OnClick.Invoke(false);
+                    buttons.ForEach(button => button.gameObject.SetActive(false));
+                    if (viewButton.State)
+                    {
+                        viewButton.State = false;
+                        viewButton.OnClick.Invoke(false);
+                    }
+                    deleteConfirmButton.gameObject.SetActive(true);
+                    deleteCancelButton.gameObject.SetActive(true);
+                    ImageHandler.titleText.text = "Please confirm:";
+                    ImageHandler.infoText.text = "You are going to delete this image";
                 }
-                deleteConfirmButton.gameObject.SetActive(true);
-                deleteCancelButton.gameObject.SetActive(true);
-                ImageHandler.titleText.text = "Please confirm:";
-                ImageHandler.infoText.text = "You are going to delete this image";
             }), "Delete", "DeleteButton", true, Color.red));
 
             buttons.Add(new HalfButton(menus[0].Path, new Vector3(3, 2), new Vector3(0.5f, 0), "Show File", new Action(ImageHandler.ShowFileInExplorer), "Show File", "ExplorerButton", true));
@@ -267,7 +270,7 @@ namespace ScreenshotManager.Core
             ToggleButton organizationToggleButton = new ToggleButton(menus[1].Path, new Vector3(1, 0), "File Organization", "Disabled", new Action<bool>(state =>
             {
                 Configuration.FileOrganizationEntry.Value = state;
-            }), "Disable File Organization", "Enable File Organization", "FileOrganizationButton", Configuration.FileOrganizationEntry.Value, true);
+            }), "Toggle File Organization", "Toggle File Organization", "FileOrganizationButton", Configuration.FileOrganizationEntry.Value, true);
             Configuration.FileOrganizationEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 organizationToggleButton.State = newValue;
@@ -317,7 +320,7 @@ namespace ScreenshotManager.Core
             ToggleButton useUIXToggleButton = new ToggleButton(menus[2].Path, new Vector3(2, 0), "Use UIX", "Disabled", new Action<bool>(state =>
             {
                 Configuration.UseUIXEntry.Value = state;
-            }), "Change Button Type", "Change Button Type", "ButtonTypeButton", Configuration.UseUIXEntry.Value, true);
+            }), "Use UIX as Menu Button", "Use UIX as Menu Button", "UseUIXButton", Configuration.UseUIXEntry.Value, true);
             Configuration.UseUIXEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 useUIXToggleButton.State = newValue;

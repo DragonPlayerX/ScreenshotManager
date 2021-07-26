@@ -14,14 +14,14 @@ using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.1.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.1.0";
+        public static readonly string Version = "1.2.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -52,9 +52,7 @@ namespace ScreenshotManager
 
             FileOrganization.PatchMethod();
             if (Configuration.FileOrganizationEntry.Value)
-            {
                 FileOrganization.OrganizeAll();
-            }
 
             ClassInjector.RegisterTypeInIl2Cpp<EnableDisableListener>();
             MelonCoroutines.Start(Init());
@@ -62,7 +60,7 @@ namespace ScreenshotManager
 
         private IEnumerator Init()
         {
-            while (VRCUiManager.prop_VRCUiManager_0 == null) yield return null;
+            while (VRCUiManager.field_Private_Static_VRCUiManager_0 == null) yield return null;
 
             MenuManager.PrepareAssets();
             MenuManager.CreateMenus();
