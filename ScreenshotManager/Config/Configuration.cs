@@ -24,7 +24,7 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> MultiViewEntry;
         public static MelonPreferences_Entry<int> LastCategoryEntry;
 
-        public static bool hasChanged;
+        public static bool HasChanged;
 
         public static void Init()
         {
@@ -48,17 +48,17 @@ namespace ScreenshotManager.Config
         public static void Save()
         {
             if (RoomManager.field_Internal_Static_ApiWorldInstance_0 == null) return;
-            if (hasChanged)
+            if (HasChanged)
             {
                 MelonPreferences.Save();
-                hasChanged = false;
+                HasChanged = false;
             }
         }
 
         private static MelonPreferences_Entry<T> CreateEntry<T>(string name, T defaultValue, string displayname, string description = null)
         {
             MelonPreferences_Entry<T> entry = Category.CreateEntry<T>(name, defaultValue, displayname, description);
-            entry.OnValueChangedUntyped += new Action(() => hasChanged = true);
+            entry.OnValueChangedUntyped += new Action(() => HasChanged = true);
             return entry;
         }
     }

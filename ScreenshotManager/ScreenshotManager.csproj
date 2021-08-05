@@ -1,13 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net4.7.2</TargetFramework>
 		<LangVersion>Latest</LangVersion>
 	</PropertyGroup>
+
 	<ItemGroup>
 		<EmbeddedResource Include="screenshotmanager.assetbundle" />
 		<EmbeddedResource Include="DiscordWebhook.exe" />
 	</ItemGroup>
+
 	<ItemGroup>
 		<Reference Include="Assembly-CSharp">
 			<HintPath>..\Libs\Assembly-CSharp.dll</HintPath>
@@ -16,13 +18,10 @@
 			<HintPath>..\Libs\Assembly-CSharp-firstpass.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2Cppmscorlib">
-			<HintPath>..\Libs\Il2Cppmscorlib.dll</HintPath>
+		  <HintPath>..\Libs\Il2Cppmscorlib.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2CppSystem">
-			<HintPath>..\Libs\Il2CppSystem.dll</HintPath>
-		</Reference>
-		<Reference Include="Il2CppSystem.Core">
-			<HintPath>..\Libs\Il2CppSystem.Core.dll</HintPath>
+		  <HintPath>..\Libs\Il2CppSystem.dll</HintPath>
 		</Reference>
 		<Reference Include="MelonLoader">
 			<HintPath>..\Libs\MelonLoader.dll</HintPath>

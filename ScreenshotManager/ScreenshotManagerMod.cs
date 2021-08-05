@@ -3,8 +3,6 @@ using System.Text;
 using System.IO;
 using System.Reflection;
 using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using MelonLoader;
 using UnhollowerRuntimeLib;
@@ -13,19 +11,18 @@ using VRChatUtilityKit.Components;
 using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
+using ScreenshotManager.Tasks;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.1", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.2.0";
+        public static readonly string Version = "1.2.1";
 
         public static ScreenshotManagerMod Instance { get; private set; }
-
-        public static Queue<Action> pendingActions = new Queue<Action>();
 
         public override void OnApplicationStart()
         {
@@ -66,29 +63,14 @@ namespace ScreenshotManager
             MenuManager.CreateMenus();
 
             ImageHandler.Init();
-            ImageHandler.Reload();
+            ImageHandler.ReloadFiles().NoAwait();
 
             MelonLogger.Msg("Running version " + Version + " of ScreenshotManager.");
         }
 
-        public static void Enqueue(Action action)
-        {
-            pendingActions.Enqueue(action);
-        }
-
         public override void OnUpdate()
         {
-            if (pendingActions.Count > 0)
-            {
-                List<Action> actions = pendingActions.ToList();
-                pendingActions.Clear();
-
-                foreach (Action action in actions)
-                {
-                    if (action != null)
-                        action.Invoke();
-                }
-            }
+            TaskProvider.mainThreadQueue.Dequeue();
         }
 
         private static bool CompareChecksums()

@@ -14,6 +14,7 @@ using VRC.Core;
 using Object = UnityEngine.Object;
 
 using ScreenshotManager.Config;
+using ScreenshotManager.Tasks;
 
 namespace ScreenshotManager.Core
 {
@@ -44,31 +45,28 @@ namespace ScreenshotManager.Core
         private static readonly string[] Extensions = new string[] { ".png", ".jpeg" };
 
         private static ImageMenuCategory currentCategory;
-        public static Text titleText;
-        public static Text infoText;
+        public static Text TitleText;
+        public static Text InfoText;
 
         private static RawImage singleViewImage;
         private static RawImage[] multiViewImages = new RawImage[9];
 
-        private static Texture2D errorTexture;
-
         private static FileInfo[] currentActiveFiles;
         private static int currentIndex = 0;
 
-        public static bool isReloading { get; private set; } = false;
+        public static bool IsReloading { get; private set; } = false;
 
         public static void Init()
         {
             currentCategory = (ImageMenuCategory)Configuration.LastCategoryEntry.Value;
-            titleText = MenuManager.menuRect.Find("Title").GetComponent<Text>();
-            infoText = MenuManager.menuRect.Find("Info").GetComponent<Text>();
-            singleViewImage = MenuManager.singleViewObject.GetComponent<RawImage>();
-            errorTexture = MenuManager.menuRect.Find("ErrorTextureHolder").GetComponent<Image>().sprite.texture;
+            TitleText = MenuManager.MenuRect.Find("Title").GetComponent<Text>();
+            InfoText = MenuManager.MenuRect.Find("Info").GetComponent<Text>();
+            singleViewImage = MenuManager.SingleViewObject.GetComponent<RawImage>();
 
-            Button.ButtonClickedEvent toggleViewAction = MenuManager.menus[0].RectTransform.Find("ViewButton").GetComponent<Button>().onClick;
+            Button.ButtonClickedEvent toggleViewAction = MenuManager.Menus[0].RectTransform.Find("ViewButton").GetComponent<Button>().onClick;
             for (int i = 1; i <= 9; i++)
             {
-                multiViewImages[i - 1] = MenuManager.multiViewObject.transform.Find("MultiViewImage" + i).GetComponent<RawImage>();
+                multiViewImages[i - 1] = MenuManager.MultiViewObject.transform.Find("MultiViewImage" + i).GetComponent<RawImage>();
                 int finalI = i;
                 multiViewImages[i - 1].GetComponent<Button>().onClick.AddListener(new Action(() =>
                 {
@@ -84,7 +82,7 @@ namespace ScreenshotManager.Core
 
         public static void Next()
         {
-            if (isReloading)
+            if (IsReloading)
                 return;
             if (currentIndex + (Configuration.MultiViewEntry.Value ? 9 : 1) < currentActiveFiles.Length)
                 currentIndex += (Configuration.MultiViewEntry.Value ? 9 : 1);
@@ -95,7 +93,7 @@ namespace ScreenshotManager.Core
 
         public static void Previous()
         {
-            if (isReloading)
+            if (IsReloading)
                 return;
             if (currentIndex - (Configuration.MultiViewEntry.Value ? 9 : 1) >= 0)
                 currentIndex -= (Configuration.MultiViewEntry.Value ? 9 : 1);
@@ -117,11 +115,11 @@ namespace ScreenshotManager.Core
         public static void Update(bool fetchImages)
         {
             if (Configuration.MultiViewEntry.Value)
-                infoText.text = (currentIndex / 9 + 1) + "/" + ((currentActiveFiles.Length - 1) / 9 + 1);
+                InfoText.text = (currentIndex / 9 + 1) + "/" + ((currentActiveFiles.Length - 1) / 9 + 1);
             else
-                infoText.text = (currentIndex + 1) + "/" + currentActiveFiles.Length;
+                InfoText.text = (currentIndex + 1) + "/" + currentActiveFiles.Length;
 
-            titleText.text = Titles[currentCategory];
+            TitleText.text = Titles[currentCategory];
 
             if (!fetchImages)
                 return;
@@ -166,9 +164,9 @@ namespace ScreenshotManager.Core
 
         private static IEnumerator LoadImage(string file, RawImage rawImage)
         {
-            UnityWebRequest webRequest = UnityWebRequestTexture.GetTexture("file:///" + file);
-            webRequest.SendWebRequest();
-            while (!webRequest.isDone)
+            UnityWebRequest webRequest = UnityWebRequestTexture.GetTexture("file:///" + file, true);
+            UnityWebRequestAsyncOperation asyncOperation = webRequest.BeginWebRequest();
+            while (!asyncOperation.isDone)
                 yield return null;
             if (!webRequest.isNetworkError && !webRequest.isHttpError)
             {
@@ -185,7 +183,7 @@ namespace ScreenshotManager.Core
                 MelonLogger.Warning("Failed to load image: " + file);
                 DestroyTexture(rawImage);
                 rawImage.color = new Color(1, 1, 1, 1);
-                rawImage.texture = errorTexture;
+                rawImage.texture = MenuManager.ErrorTexture;
                 rawImage.transform.localScale = new Vector3(1, 1, 1);
             }
         }
@@ -195,19 +193,17 @@ namespace ScreenshotManager.Core
             rawImage.color = new Color(1, 1, 1, 0.1f);
             if (rawImage.texture != null)
             {
-                if (!rawImage.texture.Equals(errorTexture))
-                {
+                if (!rawImage.texture.Equals(MenuManager.ErrorTexture))
                     Object.Destroy(rawImage.texture);
-                }
                 rawImage.texture = null;
             }
         }
 
-        public async static void ChangeCategory(ImageMenuCategory category)
+        public static void ChangeCategory(ImageMenuCategory category)
         {
             if (category == currentCategory)
                 return;
-            if (isReloading)
+            if (IsReloading)
                 return;
 
             IndexCache[currentCategory] = currentIndex;
@@ -216,14 +212,14 @@ namespace ScreenshotManager.Core
 
             Configuration.LastCategoryEntry.Value = Array.IndexOf(Enum.GetValues(typeof(ImageMenuCategory)), currentCategory);
 
-            titleText.text = Titles[currentCategory];
+            TitleText.text = Titles[currentCategory];
             currentIndex = IndexCache[currentCategory];
-            await ReloadFiles();
+            ReloadFiles().NoAwait();
         }
 
-        public async static void MovePicture()
+        public static void MovePicture()
         {
-            if (currentActiveFiles.Length > 0 && !isReloading)
+            if (currentActiveFiles.Length > 0 && !IsReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
                 if (!File.Exists(fileInfo.FullName))
@@ -246,7 +242,7 @@ namespace ScreenshotManager.Core
                     {
                         File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/" + fileInfo.Name);
                     }
-                    await ReloadFiles();
+                    ReloadFiles().NoAwait();
                 }
                 else
                 {
@@ -255,14 +251,14 @@ namespace ScreenshotManager.Core
                         Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "/Favorites");
                     }
                     File.Move(fileInfo.FullName, Configuration.ScreenshotDirectoryEntry.Value + "/Favorites/" + fileInfo.Name);
-                    await ReloadFiles();
+                    ReloadFiles().NoAwait();
                 }
             }
         }
 
-        public async static void DeletePicture()
+        public static void DeletePicture()
         {
-            if (currentActiveFiles.Length > 0 && !isReloading)
+            if (currentActiveFiles.Length > 0 && !IsReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
                 if (!File.Exists(fileInfo.FullName))
@@ -272,13 +268,13 @@ namespace ScreenshotManager.Core
                     return;
                 }
                 File.Delete(fileInfo.FullName);
-                await ReloadFiles();
+                ReloadFiles().NoAwait();
             }
         }
 
         public static void ShowFileInExplorer()
         {
-            if (currentIndex < currentActiveFiles.Length && !isReloading)
+            if (currentIndex < currentActiveFiles.Length && !IsReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
                 if (!File.Exists(fileInfo.FullName))
@@ -292,7 +288,7 @@ namespace ScreenshotManager.Core
 
         public static void SendToDiscordWebhook()
         {
-            if (currentIndex < currentActiveFiles.Length && !isReloading)
+            if (currentIndex < currentActiveFiles.Length && !IsReloading)
             {
                 FileInfo fileInfo = currentActiveFiles[currentIndex];
                 if (!File.Exists(fileInfo.FullName))
@@ -300,59 +296,69 @@ namespace ScreenshotManager.Core
                     MelonLogger.Error("File not found: " + fileInfo.FullName);
                     return;
                 }
+
                 MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord Webhook...");
+
                 string username = Configuration.DiscordWebhookSetUsernameEntry.Value ? (Configuration.DiscordWebhookUsernameEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
-                string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.CreationTime.ToString("MM.dd.yyyy HH:mm:ss"))) : "null";
-                Process.Start("Executables/DiscordWebhook.exe", "\""
+                string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString("MM.dd.yyyy HH:mm:ss"))) : "null";
+
+                ProcessStartInfo processStartInfo = new ProcessStartInfo();
+                processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";
+                processStartInfo.Arguments = "\""
                     + Configuration.DiscordWebhookURLEntry.Value + "\" \""
                     + Configuration.DiscordWebhookSetUsernameEntry.Value.ToString() + "\" \""
                     + username + "\" \""
                     + Configuration.DiscordWebhookSetMessageEntry.Value.ToString() + "\" \""
                     + message + "\" \""
                     + fileInfo.FullName + "\" \""
-                    + fileInfo.Name + "\"");
-            }
-        }
+                    + fileInfo.Name + "\"";
+                processStartInfo.UseShellExecute = false;
+                processStartInfo.RedirectStandardError = true;
 
-        public static async void Reload()
-        {
-            await ReloadFiles();
+                AsyncProcessProvider.StartProcess(processStartInfo, new Action<bool, int>((hasExited, exitCode) =>
+                {
+                    if (hasExited && exitCode == 0)
+                        MelonLogger.Msg("File " + fileInfo.Name + " was uploaded to Discord.");
+                    else
+                        MelonLogger.Error("Error while uploading file " + fileInfo.Name + " to Discord. Process exited with " + exitCode);
+                }), "DiscordWebhook").NoAwait();
+            }
         }
 
         public static async Task ReloadFiles()
         {
-            if (isReloading)
+            if (IsReloading)
                 return;
-            isReloading = true;
-            await Task.Run(() =>
+            IsReloading = true;
+            InfoText.text = "Indexing...";
+
+            await TaskProvider.YieldToBackgroundTask();
+
+            if (currentCategory == ImageMenuCategory.TODAY)
             {
-                infoText.text = "Indexing...";
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
+                DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value);
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && f.LastWriteTime >= dateTime).OrderBy(f => f.LastWriteTime).ToArray();
+            }
+            else if (currentCategory == ImageMenuCategory.FAVORITES)
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
+                if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites"))
+                    Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.LastWriteTime).ToArray();
+            }
+            else
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => f.LastWriteTime).ToArray();
+            }
 
-                if (currentCategory == ImageMenuCategory.TODAY)
-                {
-                    DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                    DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value);
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && f.LastWriteTime >= dateTime).OrderBy(f => f.LastWriteTime).ToArray();
-                }
-                else if (currentCategory == ImageMenuCategory.FAVORITES)
-                {
-                    DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                    if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites"))
-                        Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.LastWriteTime).ToArray();
-                }
-                else
-                {
-                    DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                    currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => f.LastWriteTime).ToArray();
-                }
+            if (currentIndex >= currentActiveFiles.Length)
+                currentIndex = 0;
 
-                if (currentIndex >= currentActiveFiles.Length)
-                    currentIndex = 0;
-
-                ScreenshotManagerMod.Enqueue(new Action(() => Update(true)));
-                isReloading = false;
-            });
+            IsReloading = false;
+            await TaskProvider.YieldToMainThread();
+            Update(true);
         }
     }
 }

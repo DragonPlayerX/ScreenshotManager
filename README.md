@@ -29,7 +29,7 @@
 
 ## Texture loading
 
-You may experience a little bit of lag when going through your pictures (only really noticeable in multi view or with high resolution screenshots).
+You may experience a little bit of lag when going through your pictures (only really noticeable in multi view or with high resolution screenshots). This is caused by Unity's texture loading system which is not complete non-blocking. I also tried [ImageSharp](https://github.com/SixLabors/ImageSharp) for better texture loading but it turned out that my current solution works better than ImageSharp. If someone have an idea to improve this let me know it.
 
 ## File Organization
 
@@ -42,3 +42,7 @@ If you used the PhotoOrganization Mod before you may encounter a problem that th
 You can enable the Discord Webhook (disabled by default) directly ingame or in the MelonPreferences file. You have to provide an Webhook URL and maybe change some other stuff.
 
 The code to send the Discord Webhook data is currently in an external executable file ([source code](DiscordWebhook)) wich is extracted at startup. I don't know why but when I try to make any web requests to discord.com within the mod they get blocked. My guess would therefore be that MelonLoader blocks this to take action against malicious mods. Or maybe I missed something and there is another solution. If someone knows something about it please let me know because i don't like this workaround.
+
+## Credits
+
+I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) as reference for my own implementation. It really helped me in understanding some of the async/await mechanics.
