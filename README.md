@@ -23,6 +23,15 @@
         - You can revert the organization and move all images back to the main folder
         - You can customize the naming of directories and files in MelonPreferences file
 
+---
+
+### Planned Features
+
+- Automatic loading of new screenshots without pressing reload or switching category
+- Maybe some things with the information of world and players in the metadata from screenshots which are taken with LagFreeScreenshots
+
+---
+
 ### Menu Screenshot
 
 ![UI Screenshot](https://i.imgur.com/VXotdbg.png)
@@ -33,7 +42,9 @@ You may experience a little bit of lag when going through your pictures (only re
 
 ## File Organization
 
-Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore. 
+Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore.
+
+**You should not use PhotoOrganization and ScreenshotManager at the same time. They maybe interfere each other.**
 
 If you used the PhotoOrganization Mod before you may encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> click on "Reset Organization" and then click on "Manually Organization". The mod will reset all things (restore filenames and deleting old folders) and then create new folders and move the files.
 
