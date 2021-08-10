@@ -35,6 +35,8 @@ namespace ScreenshotManager.Core
         public static GameObject MultiViewObject;
         public static Texture2D ErrorTexture;
 
+        public static bool ShowPhotoOrganizationWarning = false;
+
         private static bool imageScaled = false;
 
         public static void PrepareAssets()
@@ -251,6 +253,11 @@ namespace ScreenshotManager.Core
             {
                 MenuUI.SetActive(true);
                 newElements.SetActive(false);
+                if (ShowPhotoOrganizationWarning)
+                {
+                    UiManager.OpenSmallPopup("Warning", "PhotoOrganization Mod was found in your game. Consider about removing it when using ScreenshotManager because it has its own Organization Features and can interfere with PhotoOrganization. If you need help or having trouble go to the GitHub Page.", "Ok", new Action(UiManager.ClosePopup));
+                    ShowPhotoOrganizationWarning = false;
+                }
             });
 
             menuListener.OnDisableEvent += new Action(() =>
@@ -329,6 +336,8 @@ namespace ScreenshotManager.Core
             {
                 useUIXToggleButton.State = newValue;
             });
+
+            new SingleButton(Menus[2].Path, new Vector3(1, 2), "GitHub Page", new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), "Opens the GitHub Repository of this mod", "GithubButton", true);
 
             EnableDisableListener optionMenuListener = Menus[2].gameObject.AddComponent<EnableDisableListener>();
 

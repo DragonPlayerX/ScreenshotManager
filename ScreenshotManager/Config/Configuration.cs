@@ -18,6 +18,7 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<string> DiscordWebhookUsernameEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookSetMessageEntry;
         public static MelonPreferences_Entry<string> DiscordWebhookMessageEntry;
+        public static MelonPreferences_Entry<string> DiscordWebhookCreationTimeEntry;
         public static MelonPreferences_Entry<bool> TabButtonEntry;
         public static MelonPreferences_Entry<bool> UseUIXEntry;
         public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
@@ -38,6 +39,7 @@ namespace ScreenshotManager.Config
             DiscordWebhookUsernameEntry = CreateEntry("DiscordWebhookUsername", "{vrcname}", "Webhook Name");
             DiscordWebhookSetMessageEntry = CreateEntry("DiscordWebhookSetMessage", true, "Enable Webhook Message");
             DiscordWebhookMessageEntry = CreateEntry("DiscordWebhookMessage", "New Screenshot by {vrcname} - Picture taken at: {creationtime}", "Webhook Message");
+            DiscordWebhookCreationTimeEntry = CreateEntry("DiscordWebhookCreationTime", "dd.MM.yyyy HH:mm:ss", "Webhook Creation Time");
             TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled");
             UseUIXEntry = CreateEntry("UseUIX", false, "Use UIX", "Moves button from camera menu to UIX");
             TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");

@@ -123,41 +123,41 @@ namespace ScreenshotManager.Core
 
             if (!fetchImages)
                 return;
-            if (Configuration.MultiViewEntry.Value)
-                FetchCurrentImages();
-            else
-                FetchCurrentImage();
-        }
 
-        public static void FetchCurrentImage()
-        {
-            if (currentIndex < currentActiveFiles.Length)
-            {
-                string file = currentActiveFiles[currentIndex].FullName;
-                MelonCoroutines.Start(LoadImage(file, singleViewImage));
-            }
-            else
-            {
-                currentIndex = 0;
-                DestroyTexture(singleViewImage);
-                singleViewImage.transform.localScale = new Vector3(1, 1, 1);
-            }
+            FetchCurrentImages();
         }
 
         public static void FetchCurrentImages()
         {
-            for (int i = currentIndex; i < currentIndex + 9; i++)
+            if (Configuration.MultiViewEntry.Value)
             {
-                if (i < currentActiveFiles.Length)
+                for (int i = currentIndex; i < currentIndex + 9; i++)
                 {
-                    string file = currentActiveFiles[i].FullName;
-                    RawImage image = multiViewImages[i - currentIndex];
-                    MelonCoroutines.Start(LoadImage(file, image));
+                    if (i < currentActiveFiles.Length)
+                    {
+                        string file = currentActiveFiles[i].FullName;
+                        RawImage image = multiViewImages[i - currentIndex];
+                        MelonCoroutines.Start(LoadImage(file, image));
+                    }
+                    else
+                    {
+                        DestroyTexture(multiViewImages[i - currentIndex]);
+                        multiViewImages[i - currentIndex].transform.localScale = new Vector3(1, 1, 1);
+                    }
+                }
+            }
+            else
+            {
+                if (currentIndex < currentActiveFiles.Length)
+                {
+                    string file = currentActiveFiles[currentIndex].FullName;
+                    MelonCoroutines.Start(LoadImage(file, singleViewImage));
                 }
                 else
                 {
-                    DestroyTexture(multiViewImages[i - currentIndex]);
-                    multiViewImages[i - currentIndex].transform.localScale = new Vector3(1, 1, 1);
+                    currentIndex = 0;
+                    DestroyTexture(singleViewImage);
+                    singleViewImage.transform.localScale = new Vector3(1, 1, 1);
                 }
             }
         }
@@ -270,6 +270,10 @@ namespace ScreenshotManager.Core
                 File.Delete(fileInfo.FullName);
                 ReloadFiles().NoAwait();
             }
+            else
+            {
+                Update(false);
+            }
         }
 
         public static void ShowFileInExplorer()
@@ -300,7 +304,7 @@ namespace ScreenshotManager.Core
                 MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord Webhook...");
 
                 string username = Configuration.DiscordWebhookSetUsernameEntry.Value ? (Configuration.DiscordWebhookUsernameEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
-                string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString("MM.dd.yyyy HH:mm:ss"))) : "null";
+                string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString(Configuration.DiscordWebhookCreationTimeEntry.Value))) : "null";
 
                 ProcessStartInfo processStartInfo = new ProcessStartInfo();
                 processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.IO;
 using System.Reflection;
@@ -13,14 +14,15 @@ using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 using ScreenshotManager.Tasks;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.1", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.2", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
+[assembly: MelonOptionalDependencies("UI Expansion Kit")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.2.1";
+        public static readonly string Version = "1.2.2";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -28,6 +30,15 @@ namespace ScreenshotManager
         {
             Instance = this;
             MelonLogger.Msg("Initializing ScreenshotManager " + Version + "...");
+
+            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "PhotoOrganization"))
+            {
+                MenuManager.ShowPhotoOrganizationWarning = true;
+                MelonLogger.Warning("\n\n\n" +
+                "PhotoOrganization was found.\n" +
+                "This mod is redundant when using ScreenshotManager because it has its own file organization features.\n" +
+                "I not recommend using them at the same time!\n\n");
+            }
 
             Configuration.Init();
 
