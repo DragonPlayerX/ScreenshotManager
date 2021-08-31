@@ -59,6 +59,8 @@ The code to send the Discord Webhook data is currently in an external executable
 
 To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks". You will see a template file for a Webhook. The name of the file will be displayed ingame and in the file you can define things like WebhookURL, Username, Message etc. To add multiple Webhooks you can simply copy the template and paste it in the same folder under a new name. In the ingame menu you have a scroll view of all Webhooks when you click on share.
 
+For "Username" you can use **{vrcname}** and for "Message" you can use **{vrcname}** and **{creationtime}** to implement these values in the Webhook content.
+
 ## Credits
 
 I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) as reference for my own implementation. It really helped me in understanding some of the async/await mechanics.
