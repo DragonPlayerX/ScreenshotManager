@@ -11,11 +11,12 @@
 - View only pictures you made today (configurable hour offset)
 - Single and page mode (also you can enlarge an image by clicking on it)
 - Tab and UIX button available (fallback button for no UIX in camera menu)
+- Option to move VRC+ Gallery button to ScreenshotManager Menu
 - Image Operations:
     - Move picture to favorite folder (this is a subdirectory in the default screenshot folder)
     - Open Windows Explorer and select image
     - Delete picture (with confirm)
-    - Share picture via Discord Webhook (requires setup in config)
+    - Share picture via Discord Webhook (you can add multiple webhooks with the config files)
 - File Organization:
     - Change the location where VRChat Screenshots are saved. (compatible with [LagFreeScreenshots](https://github.com/knah/VRCMods/tree/master/LagFreeScreenshots))
     - Automatic sorting of new screenshots by placing them in subfolders named by the current day
@@ -50,9 +51,13 @@ If you used the PhotoOrganization Mod before you may encounter a problem that th
 
 ## Discord Webhook
  
-You can enable the Discord Webhook (disabled by default) directly ingame or in the MelonPreferences file. You have to provide an Webhook URL and maybe change some other stuff.
+You can enable the Discord Webhook (disabled by default) directly ingame or in the MelonPreferences file.
 
-The code to send the Discord Webhook data is currently in an external executable file ([source code](DiscordWebhook)) wich is extracted at startup. I don't know why but when I try to make any web requests to discord.com within the mod they get blocked. My guess would therefore be that MelonLoader blocks this to take action against malicious mods. Or maybe I missed something and there is another solution. If someone knows something about it please let me know because i don't like this workaround.
+The code to send the Discord Webhook data is currently in an external executable file ([source code](DiscordWebhook)) wich is extracted at startup. The reason for this is that MelonLoader blocks all requests wich are send to discord.com to take action against malicious mods.
+
+### How to create a Webhook?
+
+To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks". You will see a template file for a Webhook. The name of the file will be displayed ingame and in the file you can define things like WebhookURL, Username, Message etc. To add multiple Webhooks you can simply copy the template and paste it in the same folder under a new name. In the ingame menu you have a scroll view of all Webhooks when you click on share.
 
 ## Credits
 
