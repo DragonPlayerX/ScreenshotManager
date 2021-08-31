@@ -27,7 +27,7 @@ namespace ScreenshotManager
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
-        public MelonMod ActiveBackgrondMod;
+        public MelonMod ActiveBackgroundMod;
 
         public override void OnApplicationStart()
         {
@@ -80,7 +80,7 @@ namespace ScreenshotManager
 
         private void PatchActiveBackground()
         {
-            ActiveBackgrondMod = MelonHandler.Mods.Find(mod => mod.Info.Name == "ActiveBackground");
+            ActiveBackgroundMod = MelonHandler.Mods.Find(mod => mod.Info.Name == "ActiveBackground");
             MethodInfo methodInfo = typeof(ActiveBackground.Main).GetMethod("Setup", BindingFlags.NonPublic | BindingFlags.Instance);
             HarmonyInstance.Patch(methodInfo, postfix: new HarmonyLib.HarmonyMethod(typeof(ScreenshotManagerMod).GetMethod(nameof(ActiveBackgroundMethod), BindingFlags.Static | BindingFlags.NonPublic)));
             MelonLogger.Msg("ActiveBackground was found and patched.");
@@ -90,7 +90,7 @@ namespace ScreenshotManager
         {
             await Task.Delay(550);
             await TaskProvider.YieldToMainThread();
-            ActiveBackground.Main activeBackground = (ActiveBackground.Main)Instance.ActiveBackgrondMod;
+            ActiveBackground.Main activeBackground = (ActiveBackground.Main)Instance.ActiveBackgroundMod;
             if (activeBackground.enabled.Value)
                 MenuManager.MenuRect.GetComponent<Image>().material = GameObject.Find("UserInterface/MenuContent/Backdrop/Backdrop/Background").GetComponent<Image>().material;
             else
