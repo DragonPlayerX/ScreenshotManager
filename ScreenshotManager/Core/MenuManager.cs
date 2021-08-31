@@ -11,6 +11,7 @@ using VRChatUtilityKit.Components;
 using VRChatUtilityKit.Utilities;
 using VRChatUtilityKit.Ui;
 using UIExpansionKit.API;
+using VRC.Core;
 
 using Object = UnityEngine.Object;
 
@@ -27,6 +28,9 @@ namespace ScreenshotManager.Core
         private static SingleButton menuButton;
         private static GameObject uixButton;
 
+        private static GameObject originalGalleryButton;
+        private static GameObject newGalleryButton;
+
         public static List<SubMenu> Menus = new List<SubMenu>();
 
         public static GameObject MenuUI;
@@ -35,6 +39,11 @@ namespace ScreenshotManager.Core
         public static GameObject MultiViewObject;
         public static Texture2D ErrorTexture;
 
+        private static GameObject webhookList;
+        private static List<SingleButton> discordWebhookButtons = new List<SingleButton>();
+
+        private static List<ElementBase> buttons = new List<ElementBase>();
+
         public static bool ShowPhotoOrganizationWarning = false;
 
         private static bool imageScaled = false;
@@ -42,7 +51,7 @@ namespace ScreenshotManager.Core
         public static void PrepareAssets()
         {
             // Asset loading taken from UIExpansionKit by knah
-            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.screenshotmanager.assetbundle");
+            Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.Resources.screenshotmanager.assetbundle");
             MemoryStream memoryStream = new MemoryStream((int)stream.Length);
 
             stream.CopyTo(memoryStream);
@@ -57,6 +66,7 @@ namespace ScreenshotManager.Core
             MenuRect.anchoredPosition = Converters.ConvertToUnityUnits(new Vector3(5.522f, 1.5f));
 
             MenuRect.Find("Version/Text").GetComponent<Text>().text = "Version\n" + ScreenshotManagerMod.Version;
+            webhookList = MenuRect.Find("WebhookList/Layout").gameObject;
 
             SingleViewObject = MenuRect.Find("SingleViewImage").gameObject;
             SingleViewObject.SetActive(!Configuration.MultiViewEntry.Value);
@@ -98,6 +108,15 @@ namespace ScreenshotManager.Core
                 });
             }
 
+            originalGalleryButton = GameObject.Find("UserInterface/QuickMenu/ShortcutMenu/GalleryButton");
+            originalGalleryButton.SetActive(!Configuration.MoveGalleryButtonEntry.Value);
+            EnableDisableListener galleryEnableDisableListener = originalGalleryButton.AddComponent<EnableDisableListener>();
+            galleryEnableDisableListener.OnEnableEvent += new Action(() =>
+            {
+                if (Configuration.MoveGalleryButtonEntry.Value)
+                    originalGalleryButton.SetActive(false);
+            });
+
             // Fix for emmVRC UI color change
 
             Color uiColor = menuButton.gameObject.GetComponent<Button>().colors.normalColor;
@@ -106,8 +125,6 @@ namespace ScreenshotManager.Core
             MenuRect.Find("Background (1)").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
 
             // Main menu
-
-            List<ElementBase> buttons = new List<ElementBase>();
 
             buttons.Add(new SingleButton(Menus[0].Path, new Vector3(5, 2), "Back", new Action(() => UiManager.OpenSubMenu("UserInterface/QuickMenu/ShortcutMenu")), "Press to go back", "BackButton", true, Color.yellow));
             buttons.Add(new SingleButton(Menus[0].Path, new Vector3(5, 0), "Settings", new Action(() => Menus[2].OpenSubMenu()), "Open Settings", "SettingsMenuButton", true));
@@ -174,14 +191,26 @@ namespace ScreenshotManager.Core
             deleteConfirmButton = new SingleButton(Menus[0].Path, new Vector3(1, 2), "Delete", new Action(() =>
             {
                 ImageHandler.DeletePicture();
-                buttons.ForEach(button => button.gameObject.SetActive(true));
+                foreach (ElementBase button in buttons)
+                {
+                    if (button.gameObject.name.Equals(newGalleryButton.name))
+                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+                    else
+                        button.gameObject.SetActive(true);
+                }
                 deleteConfirmButton.gameObject.SetActive(false);
                 deleteCancelButton.gameObject.SetActive(false);
             }), "Deletes an Image", "DeleteConfirmButton", true, Color.red);
 
             deleteCancelButton = new SingleButton(Menus[0].Path, new Vector3(4, 2), "Cancel", new Action(() =>
             {
-                buttons.ForEach(button => button.gameObject.SetActive(true));
+                foreach (ElementBase button in buttons)
+                {
+                    if (button.gameObject.name.Equals(newGalleryButton.name))
+                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+                    else
+                        button.gameObject.SetActive(true);
+                }
                 deleteConfirmButton.gameObject.SetActive(false);
                 deleteCancelButton.gameObject.SetActive(false);
                 ImageHandler.Update(false);
@@ -214,18 +243,27 @@ namespace ScreenshotManager.Core
             {
                 if (Configuration.DiscordWebhookEntry.Value)
                 {
-                    if (Configuration.DiscordWebhookURLEntry.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || Configuration.DiscordWebhookURLEntry.Value.ToLower().StartsWith("https://discord.com/api/webhooks/"))
-                        ImageHandler.SendToDiscordWebhook();
-                    else
-                        UiManager.OpenSmallPopup("Action required", "No Discord Webhook URL found!", "Ok", new Action(UiManager.ClosePopup));
+                    if (viewButton.State)
+                    {
+                        viewButton.State = false;
+                        viewButton.OnClick.Invoke(false);
+                    }
+                    buttons.ForEach(button => button.gameObject.SetActive(false));
+                    discordWebhookButtons.ForEach(button => button.gameObject.SetActive(true));
+                    ImageHandler.TitleText.text = "Choose a Discord Webhook:";
+                    ImageHandler.InfoText.text = "You are going to share this image";
                 }
                 else
                 {
                     UiManager.OpenSmallPopup("Action required", "Please enable Discord Webhook to use this function.", "Ok", new Action(UiManager.ClosePopup));
                 }
-
             }), "Share", "ShareButton", true));
             buttons.Add(new SingleButton(Menus[0].Path, new Vector3(4, 2), "Next", new Action(ImageHandler.Next), "Next", "NextButton", true));
+
+            SingleButton newGallerySimpleButton = new SingleButton(Menus[0].Path, new Vector3(0, -1), "Gallery", new Action(() => UiManager.MainMenu(APIUser.CurrentUser != null && APIUser.CurrentUser.isSupporter ? 10 : 9, true)), "Open VRC+ Gallery", "GalleryButton", true, Color.yellow);
+            buttons.Add(newGallerySimpleButton);
+            newGalleryButton = newGallerySimpleButton.gameObject;
+            newGalleryButton.SetActive(Configuration.MoveGalleryButtonEntry.Value);
 
             Animator animator = SingleViewObject.GetComponent<Animator>();
 
@@ -234,13 +272,19 @@ namespace ScreenshotManager.Core
                 if (imageScaled)
                 {
                     animator.SetBool("Size Trigger", false);
-                    buttons.ForEach(button => button.gameObject.SetActive(true));
+                    foreach (ElementBase button in buttons)
+                    {
+                        if (button.gameObject.name.Equals(newGallerySimpleButton.gameObject.name))
+                            button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+                        else
+                            button.gameObject.SetActive(true);
+                    }
                     imageScaled = false;
                 }
-                else if (!deleteConfirmButton.gameObject.activeSelf)
+                else if (!deleteConfirmButton.gameObject.activeSelf && !discordWebhookButtons.Any(button => button.gameObject.activeSelf))
                 {
                     animator.SetBool("Size Trigger", true);
-                    buttons.ForEach(button => button.gameObject.SetActive(false));
+                    buttons.ForEach(buttons => buttons.gameObject.SetActive(false));
                     imageScaled = true;
                 }
             }));
@@ -268,7 +312,18 @@ namespace ScreenshotManager.Core
                 imageScaled = false;
                 deleteConfirmButton.gameObject.SetActive(false);
                 deleteCancelButton.gameObject.SetActive(false);
-                buttons.ForEach(button => button.gameObject.SetActive(true));
+                discordWebhookButtons.ForEach(button =>
+                {
+                    button.gameObject.SetActive(false);
+                    button.ButtonComponent.enabled = true;
+                });
+                foreach (ElementBase button in buttons)
+                {
+                    if (button.gameObject.name.Equals(newGallerySimpleButton.gameObject.name))
+                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+                    else
+                        button.gameObject.SetActive(true);
+                }
                 ImageHandler.Update(false);
                 MenuUI.SetActive(false);
                 newElements.SetActive(true);
@@ -336,6 +391,18 @@ namespace ScreenshotManager.Core
             {
                 useUIXToggleButton.State = newValue;
             });
+            ToggleButton moveGalleryToggleButton = new ToggleButton(Menus[2].Path, new Vector3(3, 0), "Move Gallery Button", "Disabled", new Action<bool>(state =>
+            {
+                Configuration.MoveGalleryButtonEntry.Value = state;
+            }), "Move Gallery Button to ScreenshotManager Menu", "Move Gallery Button to ScreenshotManager Menu", "MoveGalleryButton", Configuration.MoveGalleryButtonEntry.Value, true);
+            Configuration.MoveGalleryButtonEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                moveGalleryToggleButton.State = newValue;
+                originalGalleryButton.SetActive(!newValue);
+                newGalleryButton.SetActive(newValue);
+            });
+
+            new SingleButton(Menus[2].Path, new Vector3(4, 0), "Reload Webhooks", new Action(() => ReloadDiscordWebhookButtons()), "Reloads the DiscordWebhook files", "ReloadWebhooksButton", true);
 
             new SingleButton(Menus[2].Path, new Vector3(1, 2), "GitHub Page", new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), "Opens the GitHub Repository of this mod", "GithubButton", true);
 
@@ -348,6 +415,56 @@ namespace ScreenshotManager.Core
             });
 
             UiManager.OnQuickMenuClosed += new Action(() => Configuration.Save());
+        }
+
+        public static void ReloadDiscordWebhookButtons()
+        {
+            foreach (SingleButton button in discordWebhookButtons)
+            {
+                button.Destroy();
+            }
+
+            discordWebhookButtons.Clear();
+
+            SingleButton backButton = new SingleButton(Menus[0].Path, new Vector3(5, 2), "Cancel", new Action(() =>
+            {
+                foreach (ElementBase button in buttons)
+                {
+                    if (button.gameObject.name.Equals(newGalleryButton.name))
+                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+                    else
+                        button.gameObject.SetActive(true);
+                }
+                discordWebhookButtons.ForEach(button =>
+                {
+                    button.gameObject.SetActive(false);
+                    button.ButtonComponent.enabled = true;
+                });
+                ImageHandler.Update(false);
+            }), "Cancel", "WebhookCancelButton", true, Color.yellow);
+
+            backButton.gameObject.SetActive(false);
+            discordWebhookButtons.Add(backButton);
+
+            Configuration.LoadDiscordWebhooks();
+            foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhookConfig in Configuration.DiscordWebHooks)
+            {
+                SingleButton button = null;
+                button = new SingleButton(VRChatUtilityKit.Utilities.Extensions.GetPath(webhookList), new Vector3(0, 0), webhookConfig.Key, new Action(() =>
+                {
+                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/"))
+                    {
+                        ImageHandler.SendToDiscordWebhook(webhookConfig.Key, webhookConfig.Value);
+                        button.ButtonComponent.enabled = false;
+                    }
+                    else
+                    {
+                        UiManager.OpenSmallPopup("Action required", "No valid Discord Webhook URL found!", "Ok", new Action(UiManager.ClosePopup));
+                    }
+                }), webhookConfig.Key, webhookConfig.Key + "Button", true);
+                button.gameObject.SetActive(false);
+                discordWebhookButtons.Add(button);
+            }
         }
     }
 }

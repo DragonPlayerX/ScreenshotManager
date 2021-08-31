@@ -1,5 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using MelonLoader;
+
+using ScreenshotManager.Resources;
 
 namespace ScreenshotManager.Config
 {
@@ -13,19 +18,16 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<string> FileOrganizationFolderEntry;
         public static MelonPreferences_Entry<string> FileOrganizationFileEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookEntry;
-        public static MelonPreferences_Entry<string> DiscordWebhookURLEntry;
-        public static MelonPreferences_Entry<bool> DiscordWebhookSetUsernameEntry;
-        public static MelonPreferences_Entry<string> DiscordWebhookUsernameEntry;
-        public static MelonPreferences_Entry<bool> DiscordWebhookSetMessageEntry;
-        public static MelonPreferences_Entry<string> DiscordWebhookMessageEntry;
-        public static MelonPreferences_Entry<string> DiscordWebhookCreationTimeEntry;
         public static MelonPreferences_Entry<bool> TabButtonEntry;
         public static MelonPreferences_Entry<bool> UseUIXEntry;
         public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
         public static MelonPreferences_Entry<bool> MultiViewEntry;
         public static MelonPreferences_Entry<int> LastCategoryEntry;
+        public static MelonPreferences_Entry<bool> MoveGalleryButtonEntry;
 
         public static bool HasChanged;
+
+        public static Dictionary<string, DiscordWebhookConfiguration> DiscordWebHooks = new Dictionary<string, DiscordWebhookConfiguration>();
 
         public static void Init()
         {
@@ -34,17 +36,29 @@ namespace ScreenshotManager.Config
             FileOrganizationFolderEntry = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
             FileOrganizationFileEntry = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
             DiscordWebhookEntry = CreateEntry("DiscordWebHook", false, "Enable Discord Webhook");
-            DiscordWebhookURLEntry = CreateEntry("DiscordWebhookURL", "Replace with Webhook link", "URL to Discord Webhook");
-            DiscordWebhookSetUsernameEntry = CreateEntry("DiscordWebhookSetUsername", true, "Enable Webhook Name");
-            DiscordWebhookUsernameEntry = CreateEntry("DiscordWebhookUsername", "{vrcname}", "Webhook Name");
-            DiscordWebhookSetMessageEntry = CreateEntry("DiscordWebhookSetMessage", true, "Enable Webhook Message");
-            DiscordWebhookMessageEntry = CreateEntry("DiscordWebhookMessage", "New Screenshot by {vrcname} - Picture taken at: {creationtime}", "Webhook Message");
-            DiscordWebhookCreationTimeEntry = CreateEntry("DiscordWebhookCreationTime", "dd.MM.yyyy HH:mm:ss", "Webhook Creation Time");
             TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled");
             UseUIXEntry = CreateEntry("UseUIX", false, "Use UIX", "Moves button from camera menu to UIX");
             TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
             MultiViewEntry = CreateEntry("MultiView", false, "MultiView Enabled");
             LastCategoryEntry = CreateEntry("LastCategory", 1, "Last Category");
+            MoveGalleryButtonEntry = CreateEntry("MoveGalleryButton", false, "Move Gallery Button");
+
+            if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
+                ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");
+        }
+
+        public static void LoadDiscordWebhooks()
+        {
+            DiscordWebHooks.Clear();
+            foreach (FileInfo fileInfo in new DirectoryInfo("UserData/ScreenshotManager/DiscordWebhooks").EnumerateFiles())
+            {
+                DiscordWebhookConfiguration discordWebhookConfiguration = new DiscordWebhookConfiguration(fileInfo.FullName);
+                if (discordWebhookConfiguration.Load())
+                    DiscordWebHooks.Add(fileInfo.Name.Substring(0, fileInfo.Name.LastIndexOf(".")), discordWebhookConfiguration);
+                else
+                    MelonLogger.Error("Failed to load Webhook file: " + fileInfo.FullName);
+            }
+            MelonLogger.Msg("Loaded " + DiscordWebHooks.Count + " Discord Webhooks.");
         }
 
         public static void Save()

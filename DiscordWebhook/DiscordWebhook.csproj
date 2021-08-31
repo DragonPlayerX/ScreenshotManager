@@ -12,7 +12,7 @@
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
-		<Exec Command="move bin\Debug\net4.7.2\DiscordWebhook.exe ..\ScreenshotManager" />
+		<Exec Command="move bin\Debug\net4.7.2\DiscordWebhook.exe ..\ScreenshotManager\Resources" />
 	</Target>
 
 </Project>

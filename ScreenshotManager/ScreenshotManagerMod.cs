@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.IO;
 using System.Reflection;
 using System.Collections;
-using System.Security.Cryptography;
+using System.Threading.Tasks;
+using UnityEngine;
+using UnityEngine.UI;
 using MelonLoader;
 using UnhollowerRuntimeLib;
 using VRChatUtilityKit.Components;
@@ -13,18 +13,21 @@ using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 using ScreenshotManager.Tasks;
+using ScreenshotManager.Resources;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.2.2", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.3.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
-[assembly: MelonOptionalDependencies("UI Expansion Kit")]
+[assembly: MelonOptionalDependencies("UI Expansion Kit", "ActiveBackground")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.2.2";
+        public static readonly string Version = "1.3.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
+
+        public MelonMod ActiveBackgrondMod;
 
         public override void OnApplicationStart()
         {
@@ -40,19 +43,26 @@ namespace ScreenshotManager
                 "I not recommend using them at the same time!\n\n");
             }
 
+            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "ActiveBackground"))
+                PatchActiveBackground();
+
+            if (!Directory.Exists("UserData/ScreenshotManager/DiscordWebhooks"))
+            {
+                Directory.CreateDirectory("UserData/ScreenshotManager/DiscordWebhooks");
+            }
+
             Configuration.Init();
 
             if (!File.Exists("Executables/DiscordWebhook.exe"))
             {
                 if (!Directory.Exists("Executables"))
                     Directory.CreateDirectory("Executables");
-                ExtractResource();
+                ResourceHandler.ExtractResource("DiscordWebhook.exe", "Executables");
             }
             else
             {
-                MelonLogger.Msg("Validating checksums of external resources...");
-                if (!CompareChecksums())
-                    ExtractResource();
+                if (!ResourceHandler.CompareChecksums("DiscordWebhook.exe", "Executables"))
+                    ResourceHandler.ExtractResource("DiscordWebhook.exe", "Executables");
             }
 
             if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value))
@@ -66,12 +76,34 @@ namespace ScreenshotManager
             MelonCoroutines.Start(Init());
         }
 
+        // Fix for ActiveBackground
+
+        private void PatchActiveBackground()
+        {
+            ActiveBackgrondMod = MelonHandler.Mods.Find(mod => mod.Info.Name == "ActiveBackground");
+            MethodInfo methodInfo = typeof(ActiveBackground.Main).GetMethod("Setup", BindingFlags.NonPublic | BindingFlags.Instance);
+            HarmonyInstance.Patch(methodInfo, postfix: new HarmonyLib.HarmonyMethod(typeof(ScreenshotManagerMod).GetMethod(nameof(ActiveBackgroundMethod), BindingFlags.Static | BindingFlags.NonPublic)));
+            MelonLogger.Msg("ActiveBackground was found and patched.");
+        }
+
+        private static async void ActiveBackgroundMethod()
+        {
+            await Task.Delay(550);
+            await TaskProvider.YieldToMainThread();
+            ActiveBackground.Main activeBackground = (ActiveBackground.Main)Instance.ActiveBackgrondMod;
+            if (activeBackground.enabled.Value)
+                MenuManager.MenuRect.GetComponent<Image>().material = GameObject.Find("UserInterface/MenuContent/Backdrop/Backdrop/Background").GetComponent<Image>().material;
+            else
+                MenuManager.MenuRect.GetComponent<Image>().material = null;
+        }
+
         private IEnumerator Init()
         {
             while (VRCUiManager.field_Private_Static_VRCUiManager_0 == null) yield return null;
 
             MenuManager.PrepareAssets();
             MenuManager.CreateMenus();
+            MenuManager.ReloadDiscordWebhookButtons();
 
             ImageHandler.Init();
             ImageHandler.ReloadFiles().NoAwait();
@@ -82,52 +114,6 @@ namespace ScreenshotManager
         public override void OnUpdate()
         {
             TaskProvider.mainThreadQueue.Dequeue();
-        }
-
-        private static bool CompareChecksums()
-        {
-            Stream internalResource = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.DiscordWebhook.exe");
-            Stream externalResource = new FileStream("Executables/DiscordWebhook.exe", FileMode.Open, FileAccess.Read);
-
-            SHA256 sha256 = SHA256.Create();
-            string internalHash = BytesToString(sha256.ComputeHash(internalResource));
-            string externalHash = BytesToString(sha256.ComputeHash(externalResource));
-
-            internalResource.Close();
-            externalResource.Close();
-
-            MelonLogger.Msg("Internal Hash: " + internalHash);
-            MelonLogger.Msg("Existing Hash: " + externalHash);
-
-            return internalHash.Equals(externalHash);
-        }
-
-        private static string BytesToString(byte[] bytes)
-        {
-            StringBuilder builder = new StringBuilder();
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                builder.Append(bytes[i].ToString("x2"));
-            }
-            return builder.ToString();
-        }
-
-        private static void ExtractResource()
-        {
-            MelonLogger.Msg("Extracting DiscordWebhook.exe...");
-            try
-            {
-                Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.DiscordWebhook.exe");
-                FileStream file = new FileStream("Executables/DiscordWebhook.exe", FileMode.Create, FileAccess.Write);
-                resource.CopyTo(file);
-                resource.Close();
-                file.Close();
-                MelonLogger.Msg("Successfully extracted DiscordWebhook.exe");
-            }
-            catch (Exception e)
-            {
-                MelonLogger.Error(e);
-            }
         }
     }
 }

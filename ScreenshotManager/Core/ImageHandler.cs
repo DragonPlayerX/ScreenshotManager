@@ -290,7 +290,7 @@ namespace ScreenshotManager.Core
             }
         }
 
-        public static void SendToDiscordWebhook()
+        public static void SendToDiscordWebhook(string webhookName, DiscordWebhookConfiguration webhookConfig)
         {
             if (currentIndex < currentActiveFiles.Length && !IsReloading)
             {
@@ -301,18 +301,18 @@ namespace ScreenshotManager.Core
                     return;
                 }
 
-                MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord Webhook...");
+                MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord [" + webhookName + "]...");
 
-                string username = Configuration.DiscordWebhookSetUsernameEntry.Value ? (Configuration.DiscordWebhookUsernameEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
-                string message = Configuration.DiscordWebhookSetMessageEntry.Value ? (Configuration.DiscordWebhookMessageEntry.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString(Configuration.DiscordWebhookCreationTimeEntry.Value))) : "null";
+                string username = webhookConfig.SetUsername.Value ? (webhookConfig.Username.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
+                string message = webhookConfig.SetMessage.Value ? (webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString(webhookConfig.CreationTimeFormat.Value))) : "null";
 
                 ProcessStartInfo processStartInfo = new ProcessStartInfo();
                 processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";
                 processStartInfo.Arguments = "\""
-                    + Configuration.DiscordWebhookURLEntry.Value + "\" \""
-                    + Configuration.DiscordWebhookSetUsernameEntry.Value.ToString() + "\" \""
+                    + webhookConfig.WebhookURL.Value + "\" \""
+                    + webhookConfig.SetUsername.Value.ToString() + "\" \""
                     + username + "\" \""
-                    + Configuration.DiscordWebhookSetMessageEntry.Value.ToString() + "\" \""
+                    + webhookConfig.SetMessage.Value.ToString() + "\" \""
                     + message + "\" \""
                     + fileInfo.FullName + "\" \""
                     + fileInfo.Name + "\"";
@@ -322,9 +322,9 @@ namespace ScreenshotManager.Core
                 AsyncProcessProvider.StartProcess(processStartInfo, new Action<bool, int>((hasExited, exitCode) =>
                 {
                     if (hasExited && exitCode == 0)
-                        MelonLogger.Msg("File " + fileInfo.Name + " was uploaded to Discord.");
+                        MelonLogger.Msg("File " + fileInfo.Name + " was uploaded to Discord [" + webhookName + "].");
                     else
-                        MelonLogger.Error("Error while uploading file " + fileInfo.Name + " to Discord. Process exited with " + exitCode);
+                        MelonLogger.Error("Error while uploading file " + fileInfo.Name + " to Discord [" + webhookName + "]. Process exited with " + exitCode);
                 }), "DiscordWebhook").NoAwait();
             }
         }

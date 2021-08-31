@@ -6,11 +6,15 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="screenshotmanager.assetbundle" />
-		<EmbeddedResource Include="DiscordWebhook.exe" />
+		<EmbeddedResource Include="Resources\DiscordWebhook.exe" />
+		<EmbeddedResource Include="Resources\DiscordWebhookTemplate.cfg" />
+		<EmbeddedResource Include="Resources\screenshotmanager.assetbundle" />
 	</ItemGroup>
 
 	<ItemGroup>
+		<Reference Include="ActiveBackground">
+			<HintPath>..\Libs\ActiveBackground.dll</HintPath>
+		</Reference>
 		<Reference Include="Assembly-CSharp">
 			<HintPath>..\Libs\Assembly-CSharp.dll</HintPath>
 		</Reference>
@@ -18,10 +22,10 @@
 			<HintPath>..\Libs\Assembly-CSharp-firstpass.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2Cppmscorlib">
-		  <HintPath>..\Libs\Il2Cppmscorlib.dll</HintPath>
+			<HintPath>..\Libs\Il2Cppmscorlib.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2CppSystem">
-		  <HintPath>..\Libs\Il2CppSystem.dll</HintPath>
+			<HintPath>..\Libs\Il2CppSystem.dll</HintPath>
 		</Reference>
 		<Reference Include="MelonLoader">
 			<HintPath>..\Libs\MelonLoader.dll</HintPath>
