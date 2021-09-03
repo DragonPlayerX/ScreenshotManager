@@ -23,7 +23,7 @@ namespace ScreenshotManager.Core
             int movedFiles = 0;
             foreach (FileInfo file in files)
             {
-                DateTime creationTime = file.LastWriteTime;
+                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? file.CreationTime : file.LastWriteTime;
                 string directory = Configuration.ScreenshotDirectoryEntry.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolderEntry.Value);
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
@@ -40,13 +40,13 @@ namespace ScreenshotManager.Core
 
         public static void Reset()
         {
-            MelonLogger.Msg("Resetting organization...");
+            MelonLogger.Msg("Reset organization...");
             DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
             FileInfo[] files = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => !f.Directory.Name.Equals("Favorites") && !Configuration.ScreenshotDirectoryEntry.Value.EndsWith(f.Directory.Name)).ToArray();
             int movedFiles = 0;
             foreach (FileInfo file in files)
             {
-                DateTime creationTime = file.LastWriteTime;
+                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? file.CreationTime : file.LastWriteTime;
                 string newFile = Configuration.ScreenshotDirectoryEntry.Value + "/VRChat_" + creationTime.ToString("yyyy-MM-dd_HH-mm-ss.fff") + file.Extension;
                 if (!File.Exists(newFile))
                 {

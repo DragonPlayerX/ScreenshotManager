@@ -3,6 +3,8 @@
 	<PropertyGroup>
 		<TargetFramework>net4.7.2</TargetFramework>
 		<LangVersion>Latest</LangVersion>
+		<AssemblyName Condition="'$(Configuration)'=='Debug'">ScreenshotManager-debug</AssemblyName>
+		<AssemblyName Condition="'$(Configuration)'=='Release'">ScreenshotManager</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>

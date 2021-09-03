@@ -15,7 +15,7 @@ using ScreenshotManager.Core;
 using ScreenshotManager.Tasks;
 using ScreenshotManager.Resources;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.3.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.4.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 [assembly: MelonOptionalDependencies("UI Expansion Kit", "ActiveBackground")]
 
@@ -23,7 +23,7 @@ namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.3.0";
+        public static readonly string Version = "1.4.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -47,9 +47,7 @@ namespace ScreenshotManager
                 PatchActiveBackground();
 
             if (!Directory.Exists("UserData/ScreenshotManager/DiscordWebhooks"))
-            {
                 Directory.CreateDirectory("UserData/ScreenshotManager/DiscordWebhooks");
-            }
 
             Configuration.Init();
 
@@ -92,9 +90,16 @@ namespace ScreenshotManager
             await TaskProvider.YieldToMainThread();
             ActiveBackground.Main activeBackground = (ActiveBackground.Main)Instance.ActiveBackgroundMod;
             if (activeBackground.enabled.Value)
-                MenuManager.MenuRect.GetComponent<Image>().material = GameObject.Find("UserInterface/MenuContent/Backdrop/Backdrop/Background").GetComponent<Image>().material;
+            {
+                Material material = GameObject.Find("UserInterface/MenuContent/Backdrop/Backdrop/Background").GetComponent<Image>().material;
+                MenuManager.MenuRect.GetComponent<Image>().material = material;
+                MenuManager.HelpRect.GetComponent<Image>().material = material;
+            }
             else
+            {
                 MenuManager.MenuRect.GetComponent<Image>().material = null;
+                MenuManager.HelpRect.GetComponent<Image>().material = null;
+            }
         }
 
         private IEnumerator Init()

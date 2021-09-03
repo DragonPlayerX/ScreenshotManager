@@ -11,8 +11,10 @@
 		<Reference Include="System.Net.Http" />
 	</ItemGroup>
 
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)'=='Debug'">
 		<Exec Command="move bin\Debug\net4.7.2\DiscordWebhook.exe ..\ScreenshotManager\Resources" />
 	</Target>
-
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)'=='Release'">
+		<Exec Command="move bin\Release\net4.7.2\DiscordWebhook.exe ..\ScreenshotManager\Resources" />
+	</Target>
 </Project>

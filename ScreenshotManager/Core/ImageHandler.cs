@@ -44,13 +44,13 @@ namespace ScreenshotManager.Core
 
         private static readonly string[] Extensions = new string[] { ".png", ".jpeg" };
 
-        private static ImageMenuCategory currentCategory;
         public static Text TitleText;
         public static Text InfoText;
 
         private static RawImage singleViewImage;
         private static RawImage[] multiViewImages = new RawImage[9];
 
+        private static ImageMenuCategory currentCategory;
         private static FileInfo[] currentActiveFiles;
         private static int currentIndex = 0;
 
@@ -290,6 +290,29 @@ namespace ScreenshotManager.Core
             }
         }
 
+        public static void RotateImage(bool direction)
+        {
+            if (currentActiveFiles.Length > 0 && !IsReloading)
+            {
+                FileInfo fileInfo = currentActiveFiles[currentIndex];
+                if (!File.Exists(fileInfo.FullName))
+                {
+                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    return;
+                }
+                DateTime lastWriteTime = fileInfo.LastWriteTime;
+                System.Drawing.Image image = System.Drawing.Image.FromFile(fileInfo.FullName);
+                if (direction)
+                    image.RotateFlip(System.Drawing.RotateFlipType.Rotate90FlipNone);
+                else
+                    image.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipNone);
+                image.Save(fileInfo.FullName);
+                image.Dispose();
+                File.SetLastWriteTime(fileInfo.FullName, lastWriteTime);
+                Update(true);
+            }
+        }
+
         public static void SendToDiscordWebhook(string webhookName, DiscordWebhookConfiguration webhookConfig)
         {
             if (currentIndex < currentActiveFiles.Length && !IsReloading)
@@ -303,8 +326,10 @@ namespace ScreenshotManager.Core
 
                 MelonLogger.Msg("Uploading " + fileInfo.Name + " to Discord [" + webhookName + "]...");
 
+                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? fileInfo.CreationTime : fileInfo.LastWriteTime;
+
                 string username = webhookConfig.SetUsername.Value ? (webhookConfig.Username.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : "null";
-                string message = webhookConfig.SetMessage.Value ? (webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", fileInfo.LastWriteTime.ToString(webhookConfig.CreationTimeFormat.Value))) : "null";
+                string message = webhookConfig.SetMessage.Value ? (webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", creationTime.ToString(webhookConfig.CreationTimeFormat.Value))) : "null";
 
                 ProcessStartInfo processStartInfo = new ProcessStartInfo();
                 processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";
@@ -342,19 +367,19 @@ namespace ScreenshotManager.Core
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
                 DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value);
-                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && f.LastWriteTime >= dateTime).OrderBy(f => f.LastWriteTime).ToArray();
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime) >= dateTime).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToArray();
             }
             else if (currentCategory == ImageMenuCategory.FAVORITES)
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
                 if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites"))
                     Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => f.LastWriteTime).ToArray();
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToArray();
             }
             else
             {
                 DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => f.LastWriteTime).ToArray();
+                currentActiveFiles = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToArray();
             }
 
             if (currentIndex >= currentActiveFiles.Length)

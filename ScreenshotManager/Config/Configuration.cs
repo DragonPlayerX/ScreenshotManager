@@ -24,6 +24,8 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> MultiViewEntry;
         public static MelonPreferences_Entry<int> LastCategoryEntry;
         public static MelonPreferences_Entry<bool> MoveGalleryButtonEntry;
+        public static MelonPreferences_Entry<bool> UseFileCreationTimeEntry;
+        public static MelonPreferences_Entry<bool> ShowRotationButtonsEntry;
 
         public static bool HasChanged;
 
@@ -42,6 +44,8 @@ namespace ScreenshotManager.Config
             MultiViewEntry = CreateEntry("MultiView", false, "MultiView Enabled");
             LastCategoryEntry = CreateEntry("LastCategory", 1, "Last Category");
             MoveGalleryButtonEntry = CreateEntry("MoveGalleryButton", false, "Move Gallery Button");
+            UseFileCreationTimeEntry = CreateEntry("UseFileCreationTime", false, "Use File Creation Time");
+            ShowRotationButtonsEntry = CreateEntry("ShowRotationButtons", true, "Show Rotation Buttons");
 
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");
