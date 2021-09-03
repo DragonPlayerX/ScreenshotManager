@@ -106,7 +106,7 @@ namespace ScreenshotManager.Core
             tabButton.ButtonComponent.onClick.AddListener(new Action(() => tabButton.OpenTabMenu()));
             tabButton.gameObject.SetActive(Configuration.TabButtonEntry.Value);
 
-            // Fox for DesktopCamera
+            // Fix for DesktopCamera
 
             bool desktopCameraFound = MelonHandler.Mods.Any(mod => mod.Info.Name == "DesktopCamera");
 

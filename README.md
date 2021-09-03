@@ -14,6 +14,7 @@
 - Option to move VRC+ Gallery button to ScreenshotManager Menu
 - Image Operations:
     - Move picture to favorite folder (this is a subdirectory in the default screenshot folder)
+    - Rotate picture ingame
     - Open Windows Explorer and select image
     - Delete picture (with confirm)
     - Share picture via Discord Webhook (you can add multiple webhooks with the config files)
@@ -60,6 +61,10 @@ The code to send the Discord Webhook data is currently in an external executable
 To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks". You will see a template file for a Webhook. The name of the file will be displayed ingame and in the file you can define things like WebhookURL, Username, Message etc. To add multiple Webhooks you can simply copy the template and paste it in the same folder under a new name. In the ingame menu you have a scroll view of all Webhooks when you click on share.
 
 For "Username" you can use **{vrcname}** and for "Message" you can use **{vrcname}** and **{creationtime}** to implement these values in the Webhook content.
+
+## Files & Time
+
+ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file but this could be reset if you copy files or maybe in some other cases. Otherwise the last write time gets modfied when you edit the image outside of the game (ingame rotation does keep the old time value). Normally you should be fine with the default but you can change it in the MelonPreferences file.
 
 ## Credits
 
