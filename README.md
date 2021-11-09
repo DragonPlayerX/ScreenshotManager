@@ -75,10 +75,10 @@ The webhook file supports some tags with these symbols "{" "}". You can find an 
 Available tags for username and message of the webhook:
 
 - Username:
-    - {vrcplayer} = VRChat name
+    - {vrcname} = VRChat name
 
 - Message:
-    - {vrcplayer} = VRChat name
+    - {vrcname} = VRChat name
     - {creationtime} = Image creation time formatted with the "CreationTimeFormat" value of the webhook file
     - {timestamp:\<value\>} = Embed the Discord Timestamp support
 
