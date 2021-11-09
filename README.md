@@ -1,5 +1,12 @@
 # Screenshot Manager
 
+## Known Issues
+
+- Rotating an image will delete the Metadata
+- Automatic image loading is **not** compatible with LagFreeScreenshots
+
+*Will be fixed soon*
+
 ## Requirements
 
 - [MelonLoader 0.4.x](https://melonwiki.xyz/)
@@ -62,7 +69,22 @@ The code to send the Discord Webhook data is currently in an external executable
 
 To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks". You will see a template file for a Webhook. The name of the file will be displayed ingame and in the file you can define things like WebhookURL, Username, Message etc. To add multiple Webhooks you can simply copy the template and paste it in the same folder under a new name. In the ingame menu you have a scroll view of all Webhooks when you click on share.
 
-For "Username" you can use **{vrcname}** and for "Message" you can use **{vrcname}** and **{creationtime}** to implement these values in the Webhook content.
+The webhook file supports some tags with these symbols "{" "}". You can find an example here [DiscordWebhookTemplate](https://github.com/DragonPlayerX/ScreenshotManager/blob/master/ScreenshotManager/Resources/DiscordWebhookTemplate.cfg)
+
+Available tags for username and message of the webhook:
+
+- Username:
+    - {vrcplayer} = VRChat name
+
+- Message:
+    - {vrcplayer} = VRChat name
+    - {creationtime} = Image creation time formatted with the "CreationTimeFormat" value of the webhook file
+    - {timestamp:\<value\>} = Embed the Discord Timestamp support
+
+
+### How to use Discord Timestamps
+
+![Discord Timestamps](https://i.imgur.com/lDvBjQn.png)
 
 ## Steam Integration
 
