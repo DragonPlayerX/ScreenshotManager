@@ -3,23 +3,24 @@
 ## Requirements
 
 - [MelonLoader 0.4.x](https://melonwiki.xyz/)
-- [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods/tree/main/VRChatUtilityKit)
 
 ## Features
 
 - View all your Screenshots directly ingame
-- View only pictures you made today (configurable hour offset)
-- Single and page mode (also you can enlarge an image by clicking on it)
-- Tab and UIX button available (fallback button for no UIX in camera menu)
-- Option to move VRC+ Gallery button to ScreenshotManager Menu
-- Image Operations:
+- Categorize pictures (all, today, yesterday, favorites)
+- Single and page mode
+- Tab and Camera Menu button available
+- Image Functions:
     - Move picture to favorite folder (this is a subdirectory in the default screenshot folder)
     - Rotate picture ingame
     - Open Windows Explorer and select image
     - Delete picture (with confirm)
     - Share picture via Discord Webhook (you can add multiple webhooks with the config files)
+    - Upload picture to VRC+ Gallery
+    - Import picture directly to Steam
+    - Reading world metadata from [LagFreeScreenshots](https://github.com/knah/VRCMods/tree/master/LagFreeScreenshots)
 - File Organization:
-    - Change the location where VRChat Screenshots are saved. (compatible with [LagFreeScreenshots](https://github.com/knah/VRCMods/tree/master/LagFreeScreenshots))
+    - Change the location where VRChat Screenshots are saved.
     - Automatic sorting of new screenshots by placing them in subfolders named by the current day
         - You are able to convert old screenshots to the folders by pressing a button in the menu
         - You can revert the organization and move all images back to the main folder
@@ -29,14 +30,15 @@
 
 ### Planned Features
 
-- Automatic loading of new screenshots without pressing reload or switching category
-- Maybe some things with the information of world and players in the metadata from screenshots which are taken with LagFreeScreenshots
+- Automatic loading of new screenshots without pressing reload or switching category (works without LagFreeScreenshots currently)
 
 ---
 
 ### Menu Screenshot
 
-![UI Screenshot](https://i.imgur.com/VXotdbg.png)
+![UI Screenshot 1](https://i.imgur.com/gta8f8G.png) 
+![UI Screenshot 2](https://i.imgur.com/oki8Wfn.png)
+![UI Screenshot 3](https://i.imgur.com/ZBC2uyr.png)
 
 ## Texture loading
 
@@ -46,7 +48,7 @@ You may experience a little bit of lag when going through your pictures (only re
 
 Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore.
 
-**You should not use PhotoOrganization and ScreenshotManager at the same time. They maybe interfere each other.**
+**PhotoOrganization seems to be broken now caused by the new UI update.**
 
 If you used the PhotoOrganization Mod before you may encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> click on "Reset Organization" and then click on "Manually Organization". The mod will reset all things (restore filenames and deleting old folders) and then create new folders and move the files.
 
@@ -62,10 +64,27 @@ To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/Discord
 
 For "Username" you can use **{vrcname}** and for "Message" you can use **{vrcname}** and **{creationtime}** to implement these values in the Webhook content.
 
+## Steam Integration
+
+This mod uses the native Steam API and invokes internal screenshot methods to import the image to steam. It's not modifying the screenshots.vdf like other screenshots importer might do.
+
 ## Files & Time
 
 ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file but this could be reset if you copy files or maybe in some other cases. Otherwise the last write time gets modified when you edit the image outside of the game (ingame rotation does keep the old time value). Normally you should be fine with the default but you can change it in the MelonPreferences file.
 
 ## Credits
 
-I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) as reference for my own implementation. It really helped me in understanding some of the async/await mechanics.
+- I used very much code of [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods/tree/main/VRChatUtilityKit) by [loukylor](https://github.com/loukylor) to implement the needed features directly to this mod
+- I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) as reference for my own implementation.
+- As mentioned before, i used [PhotoOrganization](https://github.com/dave-kun/PhotoOrganization) as my reference for the File Organization
+
+### Credits for all Icon Authors
+
+- https://www.flaticon.com/authors/kirill-kazachek
+- https://www.flaticon.com/authors/freepik
+- https://www.flaticon.com/authors/twentyfour
+- https://www.flaticon.com/authors/becris
+- https://www.flaticon.com/authors/pixel-perfect
+- https://www.flaticon.com/authors/aldo-cervantes
+- https://www.flaticon.com/authors/stockio
+- https://www.flaticon.com/authors/dave-gandy
