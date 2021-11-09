@@ -522,15 +522,36 @@ namespace ScreenshotManager.Core
                 }
             }));
 
+            Animator leftControlAnimator = controlLeft.GetComponent<Animator>();
+            Animator rightControlAnimator = controlRight.GetComponent<Animator>();
+
+            RectTransform leftControlRect = controlLeft.GetComponent<RectTransform>();
+            RectTransform rightControlRect = controlRight.GetComponent<RectTransform>();
+
             EnableDisableListener menuListener = TabButton.SubMenu.GameObject.AddComponent<EnableDisableListener>();
             menuListener.OnDisableEvent += new Action(() =>
             {
+                controlLeft.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                leftControlRect.anchoredPosition = new Vector3(-1024, 0, 0);
+                leftControlAnimator.ResetTrigger("Normal");
+                leftControlAnimator.ResetTrigger("Highlighted");
+                leftControlAnimator.ResetTrigger("Pressed");
+                leftControlAnimator.ResetTrigger("Selected");
+                leftControlAnimator.ResetTrigger("Disabled");
+
+                controlRight.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                rightControlRect.anchoredPosition = new Vector3(1024, 0, 0);
+                rightControlAnimator.ResetTrigger("Normal");
+                rightControlAnimator.ResetTrigger("Highlighted");
+                rightControlAnimator.ResetTrigger("Pressed");
+                rightControlAnimator.ResetTrigger("Selected");
+                rightControlAnimator.ResetTrigger("Disabled");
+
                 sizeAnimator.Rebind();
                 sizeAnimator.Update(0);
                 sizeAnimator.SetBool("Size Trigger", false);
                 singleImageStyle.enabled = true;
                 Configuration.Save();
-                //TabButton.SubMenu.CloseAllSubMenus();
             });
 
             EnableDisableListener settingsMenuListener = settingsSubMenu.GameObject.AddComponent<EnableDisableListener>();
