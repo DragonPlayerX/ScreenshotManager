@@ -31,9 +31,6 @@ namespace ScreenshotManager
             Instance = this;
             MelonLogger.Msg("Initializing ScreenshotManager " + Version + "...");
 
-            //if (MelonHandler.Mods.Any(mod => mod.Info.Name == "ActiveBackground"))
-            //PatchActiveBackground();
-
             if (!Directory.Exists("UserData/ScreenshotManager/DiscordWebhooks"))
                 Directory.CreateDirectory("UserData/ScreenshotManager/DiscordWebhooks");
 
@@ -64,34 +61,6 @@ namespace ScreenshotManager
 
             MelonCoroutines.Start(Init());
         }
-
-        // Fix for ActiveBackground
-
-        /*private void PatchActiveBackground()
-        {
-            ActiveBackgroundMod = MelonHandler.Mods.Find(mod => mod.Info.Name == "ActiveBackground");
-            MethodInfo methodInfo = typeof(ActiveBackground.Main).GetMethod("Setup", BindingFlags.NonPublic | BindingFlags.Instance);
-            HarmonyInstance.Patch(methodInfo, postfix: new HarmonyLib.HarmonyMethod(typeof(ScreenshotManagerMod).GetMethod(nameof(ActiveBackgroundMethod), BindingFlags.Static | BindingFlags.NonPublic)));
-            MelonLogger.Msg("ActiveBackground was found and patched.");
-        }
-
-        private static async void ActiveBackgroundMethod()
-        {
-            await Task.Delay(550);
-            await TaskProvider.YieldToMainThread();
-            ActiveBackground.Main activeBackground = (ActiveBackground.Main)Instance.ActiveBackgroundMod;
-            if (activeBackground.enabled.Value)
-            {
-                Material material = GameObject.Find("UserInterface/MenuContent/Backdrop/Backdrop/Background").GetComponent<Image>().material;
-                MenuManager.MenuRect.GetComponent<Image>().material = material;
-                MenuManager.HelpRect.GetComponent<Image>().material = material;
-            }
-            else
-            {
-                MenuManager.MenuRect.GetComponent<Image>().material = null;
-                MenuManager.HelpRect.GetComponent<Image>().material = null;
-            }
-        }*/
 
         private IEnumerator Init()
         {
