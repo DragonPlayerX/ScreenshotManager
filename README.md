@@ -4,6 +4,7 @@
 
 - Rotating an image will delete the Metadata
 - Automatic image loading is **not** compatible with LagFreeScreenshots
+- Guilded webhooks will work with next release
 
 *Will be fixed soon*
 
