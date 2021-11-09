@@ -14,14 +14,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Reference Include="ActiveBackground">
-			<HintPath>..\Libs\ActiveBackground.dll</HintPath>
-		</Reference>
 		<Reference Include="Assembly-CSharp">
 			<HintPath>..\Libs\Assembly-CSharp.dll</HintPath>
 		</Reference>
 		<Reference Include="Assembly-CSharp-firstpass">
 			<HintPath>..\Libs\Assembly-CSharp-firstpass.dll</HintPath>
+		</Reference>
+		<Reference Include="DataModel">
+		  <HintPath>..\Libs\DataModel.dll</HintPath>
 		</Reference>
 		<Reference Include="Il2Cppmscorlib">
 			<HintPath>..\Libs\Il2Cppmscorlib.dll</HintPath>
@@ -32,14 +32,14 @@
 		<Reference Include="MelonLoader">
 			<HintPath>..\Libs\MelonLoader.dll</HintPath>
 		</Reference>
-		<Reference Include="UIExpansionKit">
-			<HintPath>..\Libs\UIExpansionKit.dll</HintPath>
-		</Reference>
 		<Reference Include="UnhollowerBaseLib">
 			<HintPath>..\Libs\UnhollowerBaseLib.dll</HintPath>
 		</Reference>
 		<Reference Include="UnhollowerRuntimeLib">
 			<HintPath>..\Libs\UnhollowerRuntimeLib.dll</HintPath>
+		</Reference>
+		<Reference Include="Unity.TextMeshPro">
+		  <HintPath>..\Libs\Unity.TextMeshPro.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine">
 			<HintPath>..\Libs\UnityEngine.dll</HintPath>
@@ -52,6 +52,12 @@
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<HintPath>..\Libs\UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.InputLegacyModule">
+		  <HintPath>..\Libs\UnityEngine.InputLegacyModule.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.InputModule">
+		  <HintPath>..\Libs\UnityEngine.InputModule.dll</HintPath>
 		</Reference>
 		<Reference Include="UnityEngine.TextRenderingModule">
 			<HintPath>..\Libs\UnityEngine.TextRenderingModule.dll</HintPath>
@@ -68,11 +74,17 @@
 		<Reference Include="UnityEngine.UnityWebRequestTextureModule">
 			<HintPath>..\Libs\UnityEngine.UnityWebRequestTextureModule.dll</HintPath>
 		</Reference>
+		<Reference Include="VRC.UI.Core">
+		  <HintPath>..\Libs\VRC.UI.Core.dll</HintPath>
+		</Reference>
+		<Reference Include="VRC.UI.Elements">
+		  <HintPath>..\Libs\VRC.UI.Elements.dll</HintPath>
+		</Reference>
+		<Reference Include="VRC.UI.Shared">
+		  <HintPath>..\Libs\VRC.UI.Shared.dll</HintPath>
+		</Reference>
 		<Reference Include="VRCCore-Standalone">
 			<HintPath>..\Libs\VRCCore-Standalone.dll</HintPath>
-		</Reference>
-		<Reference Include="VRChatUtilityKit">
-			<HintPath>..\Libs\VRChatUtilityKit.dll</HintPath>
 		</Reference>
 	</ItemGroup>
 

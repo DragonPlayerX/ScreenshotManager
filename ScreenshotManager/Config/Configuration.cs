@@ -19,7 +19,6 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<string> FileOrganizationFileEntry;
         public static MelonPreferences_Entry<bool> DiscordWebhookEntry;
         public static MelonPreferences_Entry<bool> TabButtonEntry;
-        public static MelonPreferences_Entry<bool> UseUIXEntry;
         public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
         public static MelonPreferences_Entry<bool> MultiViewEntry;
         public static MelonPreferences_Entry<int> LastCategoryEntry;
@@ -39,7 +38,6 @@ namespace ScreenshotManager.Config
             FileOrganizationFileEntry = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
             DiscordWebhookEntry = CreateEntry("DiscordWebHook", false, "Enable Discord Webhook");
             TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled");
-            UseUIXEntry = CreateEntry("UseUIX", false, "Use UIX", "Moves button from camera menu to UIX");
             TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
             MultiViewEntry = CreateEntry("MultiView", false, "MultiView Enabled");
             LastCategoryEntry = CreateEntry("LastCategory", 1, "Last Category");

@@ -1,29 +1,26 @@
-﻿using System.Linq;
-using System.IO;
-using System.Reflection;
+﻿using System.IO;
 using System.Collections;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using MelonLoader;
 using UnhollowerRuntimeLib;
-using VRChatUtilityKit.Components;
 
 using ScreenshotManager;
 using ScreenshotManager.Config;
 using ScreenshotManager.Core;
 using ScreenshotManager.Tasks;
 using ScreenshotManager.Resources;
+using ScreenshotManager.UI;
+using ScreenshotManager.UI.Components;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "1.4.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.0.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
-[assembly: MelonOptionalDependencies("UI Expansion Kit", "ActiveBackground")]
 
 namespace ScreenshotManager
 {
     public class ScreenshotManagerMod : MelonMod
     {
-        public static readonly string Version = "1.4.0";
+
+        public static readonly string Version = "2.0.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -34,17 +31,8 @@ namespace ScreenshotManager
             Instance = this;
             MelonLogger.Msg("Initializing ScreenshotManager " + Version + "...");
 
-            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "PhotoOrganization"))
-            {
-                MenuManager.ShowPhotoOrganizationWarning = true;
-                MelonLogger.Warning("\n\n\n" +
-                "PhotoOrganization was found.\n" +
-                "This mod is redundant when using ScreenshotManager because it has its own file organization features.\n" +
-                "I not recommend using them at the same time!\n\n");
-            }
-
-            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "ActiveBackground"))
-                PatchActiveBackground();
+            //if (MelonHandler.Mods.Any(mod => mod.Info.Name == "ActiveBackground"))
+            //PatchActiveBackground();
 
             if (!Directory.Exists("UserData/ScreenshotManager/DiscordWebhooks"))
                 Directory.CreateDirectory("UserData/ScreenshotManager/DiscordWebhooks");
@@ -70,13 +58,16 @@ namespace ScreenshotManager
             if (Configuration.FileOrganizationEntry.Value)
                 FileOrganization.OrganizeAll();
 
+            FileDataHandler.Init();
+
             ClassInjector.RegisterTypeInIl2Cpp<EnableDisableListener>();
+
             MelonCoroutines.Start(Init());
         }
 
         // Fix for ActiveBackground
 
-        private void PatchActiveBackground()
+        /*private void PatchActiveBackground()
         {
             ActiveBackgroundMod = MelonHandler.Mods.Find(mod => mod.Info.Name == "ActiveBackground");
             MethodInfo methodInfo = typeof(ActiveBackground.Main).GetMethod("Setup", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -100,18 +91,23 @@ namespace ScreenshotManager
                 MenuManager.MenuRect.GetComponent<Image>().material = null;
                 MenuManager.HelpRect.GetComponent<Image>().material = null;
             }
-        }
+        }*/
 
         private IEnumerator Init()
         {
             while (VRCUiManager.field_Private_Static_VRCUiManager_0 == null) yield return null;
+            while (GameObject.Find("UserInterface").transform.Find("Canvas_QuickMenu(Clone)/Container/Window/QMParent") == null)
+                yield return null;
 
-            MenuManager.PrepareAssets();
-            MenuManager.CreateMenus();
+            UiManager.UiInit();
+
+            MenuManager.Init();
             MenuManager.ReloadDiscordWebhookButtons();
 
             ImageHandler.Init();
             ImageHandler.ReloadFiles().NoAwait();
+
+            SteamIntegration.Init();
 
             MelonLogger.Msg("Running version " + Version + " of ScreenshotManager.");
         }

@@ -23,13 +23,14 @@ namespace ScreenshotManager.Tasks
             try
             {
                 process.Start();
-
                 process.BeginErrorReadLine();
 
                 bool hasExited = process.WaitForExit(30000);
 
                 if (!hasExited)
                     process.Kill();
+
+                await TaskProvider.YieldToMainThread();
 
                 onComplete(hasExited, process.ExitCode);
             }

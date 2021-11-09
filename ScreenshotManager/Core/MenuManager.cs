@@ -1,63 +1,79 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using UnhollowerRuntimeLib;
-using VRChatUtilityKit.Components;
-using VRChatUtilityKit.Utilities;
-using VRChatUtilityKit.Ui;
-using UIExpansionKit.API;
 using VRC.Core;
+using VRC.UI.Core.Styles;
 
 using Object = UnityEngine.Object;
 
 using ScreenshotManager.UI;
+using ScreenshotManager.UI.Elements;
+using ScreenshotManager.UI.Components;
 using ScreenshotManager.Config;
 using ScreenshotManager.Tasks;
+using ScreenshotManager.Utils;
+using System.Threading.Tasks;
 
 namespace ScreenshotManager.Core
 {
     public static class MenuManager
     {
 
-        private static TabButton tabButton;
-        private static SingleButton menuButton;
-        private static GameObject uixButton;
+        public static TabButton TabButton;
 
-        private static GameObject originalGalleryButton;
-        private static GameObject newGalleryButton;
+        public static ButtonHeader InfoButtonHeader;
+        public static ButtonHeader ActionsMenuInfoButtonHeader;
 
-        public static List<SubMenu> Menus = new List<SubMenu>();
+        public static GameObject MainImageContainer;
+        public static RectTransform MainImageContainerRect;
+        public static GameObject SecondaryImageContainer;
+        public static RectTransform SecondaryImageContainerRect;
 
-        public static GameObject MenuUI;
-        public static RectTransform MenuRect;
-        public static GameObject HelpUI;
-        public static RectTransform HelpRect;
+        public static Text ImageCreationTimeText;
+        public static Text ImageSizeText;
+        public static Text ImageWorldNameText;
 
-        public static GameObject SingleViewObjectHolder;
-        public static GameObject SingleViewObject;
-        public static GameObject MultiViewObject;
+        public static GameObject SingleImageContainer;
+        public static GameObject MultiImageContainer;
         public static Texture2D ErrorTexture;
 
-        private static GameObject rotateLeftButton;
-        private static GameObject rotateRightButton;
+        public static SingleButton FavoriteButton;
 
-        private static GameObject webhookList;
-        private static List<SingleButton> discordWebhookButtons = new List<SingleButton>();
+        private static SubMenu webhookSubMenu;
 
-        private static List<ElementBase> buttons = new List<ElementBase>();
+        private static Queue<Action> styleQueue = new Queue<Action>();
 
-        public static bool ShowPhotoOrganizationWarning = false;
-
-        private static bool imageScaled = false;
-
-        public static void PrepareAssets()
+        public static Dictionary<string, Sprite> Sprites = new Dictionary<string, Sprite>()
         {
-            // Asset loading taken from UIExpansionKit by knah
+            { "Gallery", null },
+            { "Grid", null },
+            { "Category", null },
+            { "Actions", null },
+            { "Settings", null },
+            { "Organization", null },
+            { "Manually", null },
+            { "Blocked", null },
+            { "Reload", null },
+            { "GitHub", null },
+            { "Heart", null },
+            { "Share", null },
+            { "Trash", null },
+            { "Star", null },
+            { "Tab", null },
+            { "File", null },
+            { "Upload", null },
+            { "RotateRight", null },
+            { "RotateLeft", null },
+            { "Steam", null }
+        };
+
+        public static void Init()
+        {
             Stream stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.Resources.screenshotmanager.assetbundle");
             MemoryStream memoryStream = new MemoryStream((int)stream.Length);
 
@@ -65,505 +81,489 @@ namespace ScreenshotManager.Core
 
             AssetBundle assetBundle = AssetBundle.LoadFromMemory_Internal(memoryStream.ToArray(), 0);
             assetBundle.hideFlags |= HideFlags.DontUnloadUnusedAsset;
-            MenuUI = Object.Instantiate(assetBundle.LoadAsset_Internal("Assets/ScreenshotManagerUI.prefab", Il2CppType.Of<GameObject>()).Cast<GameObject>(), QuickMenu.prop_QuickMenu_0.gameObject.transform);
-            HelpUI = Object.Instantiate(assetBundle.LoadAsset_Internal("Assets/ScreenshotManagerHelpUI.prefab", Il2CppType.Of<GameObject>()).Cast<GameObject>(), QuickMenu.prop_QuickMenu_0.gameObject.transform);
-            ErrorTexture = assetBundle.LoadAsset("Assets/Textures/ErrorTexture.png", Il2CppType.Of<Sprite>()).Cast<Sprite>().texture;
+            MainImageContainer = Object.Instantiate(assetBundle.LoadAsset_Internal("Assets/MainImage_Container.prefab", Il2CppType.Of<GameObject>()).Cast<GameObject>(), UiManager.QMStateController.transform.Find("Container/Window/QMParent").transform);
+            SecondaryImageContainer = Object.Instantiate(assetBundle.LoadAsset_Internal("Assets/SecondaryImage_Container.prefab", Il2CppType.Of<GameObject>()).Cast<GameObject>(), UiManager.QMStateController.transform.Find("Container/Window/QMParent").transform);
+            ErrorTexture = assetBundle.LoadAsset("Assets/Sprites/ErrorTexture.png", Il2CppType.Of<Sprite>()).Cast<Sprite>().texture;
             ErrorTexture.hideFlags |= HideFlags.DontUnloadUnusedAsset;
 
-            MenuRect = MenuUI.GetComponent<RectTransform>();
-            MenuRect.anchoredPosition = Converters.ConvertToUnityUnits(new Vector3(5.522f, 1.5f));
-
-            HelpRect = HelpUI.GetComponent<RectTransform>();
-            HelpRect.anchoredPosition = Converters.ConvertToUnityUnits(new Vector3(5.522f, 1.5f));
-
-            MenuRect.Find("Version/Text").GetComponent<Text>().text = "Version\n" + ScreenshotManagerMod.Version;
-            webhookList = MenuRect.Find("WebhookList/Layout").gameObject;
-
-            SingleViewObjectHolder = MenuRect.Find("SingleViewImageHolder").gameObject;
-            SingleViewObjectHolder.SetActive(!Configuration.MultiViewEntry.Value);
-            MultiViewObject = MenuRect.Find("MultiView").gameObject;
-            MultiViewObject.SetActive(Configuration.MultiViewEntry.Value);
-
-            rotateLeftButton = SingleViewObjectHolder.transform.Find("Left Button").gameObject;
-            rotateRightButton = SingleViewObjectHolder.transform.Find("Right Button").gameObject;
-            rotateLeftButton.SetActive(Configuration.ShowRotationButtonsEntry.Value);
-            rotateRightButton.SetActive(Configuration.ShowRotationButtonsEntry.Value);
-
-            SingleViewObject = SingleViewObjectHolder.transform.Find("SingleViewImage").gameObject;
-
-            MenuUI.SetActive(false);
-            HelpUI.SetActive(false);
-        }
-
-        public static void CreateMenus()
-        {
-            Menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuMain"));
-            Menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuOrganization"));
-            Menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuSettings"));
-            Menus.Add(new SubMenu("UserInterface/QuickMenu", "ScreenshotManagerMenuHelp"));
-
-            tabButton = new TabButton(MenuRect.Find("Version/Image").GetComponent<Image>().sprite, Menus[0]);
-            tabButton.ButtonComponent.onClick.AddListener(new Action(() => tabButton.OpenTabMenu()));
-            tabButton.gameObject.SetActive(Configuration.TabButtonEntry.Value);
-
-            // Fix for DesktopCamera
-
-            bool desktopCameraFound = MelonHandler.Mods.Any(mod => mod.Info.Name == "DesktopCamera");
-
-            menuButton = new SingleButton("UserInterface/QuickMenu/CameraMenu", desktopCameraFound ? new Vector3(5, 4) : new Vector3(4, 2), "Screenshot Manager", new Action(() => tabButton.OpenTabMenu()), "Open Screenshot Manager", "ScreenshotManagerButton", true, Color.yellow);
-            menuButton.gameObject.SetActive(!Configuration.TabButtonEntry.Value);
-
-            // UIX integration
-
-            if (MelonHandler.Mods.Any(mod => mod.Info.Name == "UI Expansion Kit"))
+            Dictionary<string, Sprite> newSpriteDict = new Dictionary<string, Sprite>();
+            foreach (string key in Sprites.Keys)
             {
-                ExpansionKitApi.GetExpandedMenu(ExpandedMenu.CameraQuickMenu).AddSimpleButton("Screenshot Manager", new Action(() => Menus[0].OpenSubMenu()), new Action<GameObject>(gameObject =>
-                {
-                    uixButton = gameObject;
-                    gameObject.SetActive(Configuration.UseUIXEntry.Value && !Configuration.TabButtonEntry.Value);
-                }));
-                Configuration.UseUIXEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-                {
-                    if (!Configuration.TabButtonEntry.Value)
-                    {
-                        uixButton.SetActive(newValue);
-                        menuButton.gameObject.SetActive(!newValue);
-                    }
-                });
+                Sprite sprite = assetBundle.LoadAsset("Assets/Sprites/" + key + "_Icon.png", Il2CppType.Of<Sprite>()).Cast<Sprite>();
+                sprite.hideFlags |= HideFlags.DontUnloadUnusedAsset;
+                newSpriteDict.Add(key, sprite);
             }
 
-            originalGalleryButton = GameObject.Find("UserInterface/QuickMenu/ShortcutMenu/GalleryButton");
-            originalGalleryButton.SetActive(!Configuration.MoveGalleryButtonEntry.Value);
-            EnableDisableListener galleryEnableDisableListener = originalGalleryButton.AddComponent<EnableDisableListener>();
-            galleryEnableDisableListener.OnEnableEvent += new Action(() =>
+            Sprites = newSpriteDict;
+            Sprites.Add("X", UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Settings/Panel_QM_ScrollRect/Viewport/VerticalLayoutGroup/Buttons_UI_Elements_Row_1/Button_ToggleQMInfo/Icon_Off").GetComponent<Image>().sprite);
+
+            MainImageContainerRect = MainImageContainer.GetComponent<RectTransform>();
+            SecondaryImageContainerRect = SecondaryImageContainer.GetComponent<RectTransform>();
+
+            SingleImageContainer = MainImageContainerRect.Find("SingleImage_Container").gameObject;
+            SingleImageContainer.SetActive(!Configuration.MultiViewEntry.Value);
+            MultiImageContainer = MainImageContainerRect.Find("MultiImage_Container").gameObject;
+            MultiImageContainer.SetActive(Configuration.MultiViewEntry.Value);
+
+            MainImageContainer.SetLayerRecursive(12);
+            SecondaryImageContainer.SetLayerRecursive(12);
+
+            MainImageContainer.SetActive(true);
+            SecondaryImageContainer.SetActive(true);
+
+            TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "ScreenshotManager_Main", "Page_ScreenshotManager");
+            TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
+            TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            TabButton.GameObject.SetActive(Configuration.TabButtonEntry.Value);
+            TabButton.OnClick += new Action(() =>
             {
-                if (Configuration.MoveGalleryButtonEntry.Value)
-                    originalGalleryButton.SetActive(false);
+                for (int i = 0; i < styleQueue.Count; i++)
+                {
+                    styleQueue.Dequeue().Invoke();
+                }
             });
 
-            // Fix for emmVRC UI color change
+            SingleButton menuButton = new SingleButton(new Action(() => TabButton.MenuTab.ShowTabContent()), Sprites["Gallery"], "Screenshot Manager", "Open Screenshot Manager", "Button_ScreenshotManager");
+            menuButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
+            menuButton.GameObject.SetActive(!Configuration.TabButtonEntry.Value);
 
-            Color uiColor = menuButton.gameObject.GetComponent<Button>().colors.normalColor;
+            MainImageContainerRect.parent = TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport/VerticalLayoutGroup");
+            MainImageContainerRect.sizeDelta = new Vector2(1024, 1152 / 2);
 
-            MenuRect.Find("Background").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
-            MenuRect.Find("Background (1)").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
-            HelpRect.Find("Background").GetComponent<Image>().color = new Color(uiColor.r, uiColor.g, uiColor.b, 0.1f);
+            // Styles & Build-in stuff
 
-            // Main menu
+            //Color colorLightBlue = new Color(0.4157f, 0.8902f, 0.9765f);
+            //Color colorDarkGreen = new Color(0.0275f, 0.1843f, 0.1882f);
+            //Color colorLightGreen = new Color(0.298f, 0.5569f, 0.5843f);
 
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(5, 2), "Back", new Action(() => UiManager.OpenSubMenu("UserInterface/QuickMenu/ShortcutMenu")), "Press to go back", "BackButton", true, Color.yellow));
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(5, 0), "Settings", new Action(() => Menus[2].OpenSubMenu()), "Open Settings", "SettingsMenuButton", true));
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(5, -1), "Help", new Action(() => Menus[3].OpenSubMenu()), "Open Help", "HelpMenuButton", true, Color.magenta));
+            StyleElement singleImageStyle = SingleImageContainer.transform.Find("SingleImage_Mask/Image").gameObject.AddComponent<StyleElement>();
+            singleImageStyle.field_Public_String_1 = "Rect";
 
-            ToggleButton viewButton = new ToggleButton(Menus[0].Path, new Vector3(5, 1), "Multi View", "Single View", new Action<bool>(state =>
+            for (int i = 1; i <= 9; i++)
+                MultiImageContainer.transform.Find("MultiImage_Mask_" + i + "/Image").gameObject.AddComponent<StyleElement>().field_Public_String_1 = "Rect";
+
+            Transform controlLeft = MainImageContainerRect.Find("Control_Left");
+            controlLeft.GetComponent<RectTransform>().anchoredPosition3D += new Vector3(0, 0, -5);
+
+            Button controlLeftNavigateButton = controlLeft.Find("Button_Mask/Button_Navigate").GetComponent<Button>();
+            controlLeftNavigateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
+            controlLeftNavigateButton.onClick.AddListener(new Action(() => ImageHandler.Previous()));
+
+            Button controlLeftRotateButton = controlLeft.Find("Button_Mask/Button_Rotate").GetComponent<Button>();
+            controlLeftRotateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
+            controlLeftRotateButton.onClick.AddListener(new Action(() => ImageHandler.RotateImage(ImageHandler.Direction.Left)));
+
+            Transform controlRight = MainImageContainerRect.Find("Control_Right");
+            controlRight.GetComponent<RectTransform>().anchoredPosition3D += new Vector3(0, 0, -5);
+
+            Button controlRightNavigateButton = controlRight.Find("Button_Mask/Button_Navigate").GetComponent<Button>();
+            controlRightNavigateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
+            controlRightNavigateButton.onClick.AddListener(new Action(() => ImageHandler.Next()));
+
+            Button controlRightRotateButton = controlRight.Find("Button_Mask/Button_Rotate").GetComponent<Button>();
+            controlRightRotateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
+            controlRightRotateButton.onClick.AddListener(new Action(() => ImageHandler.RotateImage(ImageHandler.Direction.Right)));
+
+            controlLeftRotateButton.gameObject.SetActive(Configuration.ShowRotationButtonsEntry.Value);
+            controlRightRotateButton.gameObject.SetActive(Configuration.ShowRotationButtonsEntry.Value);
+
+            Transform textContainer = SecondaryImageContainerRect.Find("TextContainer");
+
+            Text imageCreationTimeHeader = textContainer.Find("CreationTime/Text_Header").GetComponent<Text>();
+            ImageCreationTimeText = textContainer.Find("CreationTime/Text_Content").GetComponent<Text>();
+
+            Text imageSizeHeader = textContainer.Find("FileSize/Text_Header").GetComponent<Text>();
+            ImageSizeText = textContainer.Find("FileSize/Text_Content").GetComponent<Text>();
+
+            Text imageWorldNameHeader = textContainer.Find("WorldName/Text_Header").GetComponent<Text>();
+            ImageWorldNameText = textContainer.Find("WorldName/Text_Content").GetComponent<Text>();
+
+            GameObject tempObject1 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
+            GameObject tempObject2 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
+            GameObject tempObject3 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
+
+            TextMeshProUGUI text1 = tempObject1.AddComponent<TextMeshProUGUI>();
+            TextMeshProUGUI text2 = tempObject2.AddComponent<TextMeshProUGUI>();
+            TextMeshProUGUI text3 = tempObject3.AddComponent<TextMeshProUGUI>();
+
+            StyleElement styleElement1 = tempObject1.AddComponent<StyleElement>();
+            styleElement1.field_Public_String_1 = "H3";
+            StyleElement styleElement2 = tempObject2.AddComponent<StyleElement>();
+            styleElement2.field_Public_String_1 = "H4";
+            StyleElement styleElement3 = tempObject3.AddComponent<StyleElement>();
+            styleElement3.field_Public_String_1 = "BackgroundPanel";
+
+            styleQueue.Enqueue(new Action(() =>
             {
-                Configuration.MultiViewEntry.Value = state;
-            }), "Change Image View", "Change Image View", "ViewButton", Configuration.MultiViewEntry.Value, true);
+                Task.Run(async () =>
+                {
+                    await Task.Delay(50);
+
+                    Color colorLightBlue = text1.color;
+                    Color colorLightGreen = text2.color;
+                    Color colorDarkGreen = text3.color;
+
+                    await TaskProvider.YieldToMainThread();
+
+                    SecondaryImageContainerRect.Find("Background").GetComponent<Image>().color = colorDarkGreen;
+                    controlLeftNavigateButton.colors = new ColorBlock() { colorMultiplier = 1, normalColor = colorLightBlue, highlightedColor = colorLightBlue, pressedColor = colorLightBlue, selectedColor = colorLightBlue, disabledColor = colorLightBlue };
+                    controlLeftRotateButton.colors = new ColorBlock() { colorMultiplier = 1, normalColor = colorLightBlue, highlightedColor = colorLightBlue, pressedColor = colorLightBlue, selectedColor = colorLightBlue, disabledColor = colorLightBlue };
+
+                    controlRightNavigateButton.colors = new ColorBlock() { colorMultiplier = 1, normalColor = colorLightBlue, highlightedColor = colorLightBlue, pressedColor = colorLightBlue, selectedColor = colorLightBlue, disabledColor = colorLightBlue };
+
+                    controlRightRotateButton.colors = new ColorBlock() { colorMultiplier = 1, normalColor = colorLightBlue, highlightedColor = colorLightBlue, pressedColor = colorLightBlue, selectedColor = colorLightBlue, disabledColor = colorLightBlue };
+
+                    imageCreationTimeHeader.color = colorLightGreen;
+                    ImageCreationTimeText.color = colorLightBlue;
+                    imageSizeHeader.color = colorLightGreen;
+                    ImageSizeText.color = colorLightBlue;
+
+                    imageWorldNameHeader.color = colorLightGreen;
+                    ImageWorldNameText.color = colorLightBlue;
+
+                    Object.Destroy(tempObject1);
+                    Object.Destroy(tempObject2);
+                    Object.Destroy(tempObject3);
+                }).NoAwait();
+            }));
+
+            // Menus
+
+            InfoButtonHeader = new ButtonHeader(TabButton.SubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Title", "Title_Header", "Info");
+            InfoButtonHeader.RectTransform.SetSiblingIndex(0);
+            InfoButtonHeader.Minimize();
+
+            SubMenu categoriesSubMenu = new SubMenu("ScreenshotManagerCategories", "Menu_ScreenshotManager_Categories", "Select Category", true);
+            SubMenu actionsSubMenu = new SubMenu("ScreenshotManagerActions", "Menu_ScreenshotManager_Actions", "Photo Actions", true);
+            SubMenu settingsSubMenu = new SubMenu("ScreenshotManagerSettings", "Menu_ScreenshotManager_Settings", "Settings", true);
+            webhookSubMenu = new SubMenu("ScreenshotManagerWebhooks", "Menu_ScreenshotManager_Webhooks", "Select Webhook", true, true);
+
+            actionsSubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
+            actionsSubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            SecondaryImageContainerRect.parent = actionsSubMenu.GameObject.transform.Find("ScrollRect/Viewport/VerticalLayoutGroup");
+            SecondaryImageContainerRect.sizeDelta = new Vector2(1024, 1152 / 4);
+
+            // Main menu buttons
+
+            ButtonGroup mainMenuButtonGroup = new ButtonGroup("Actions");
+
+            ToggleButton viewButton = new ToggleButton(new Action<bool>(state => Configuration.MultiViewEntry.Value = state), Sprites["Grid"], Sprites["Gallery"], "Multi View", "Single View", "Switch to single image view mode", "Switch to multi image view mode", "Button_View", Configuration.MultiViewEntry.Value);
             Configuration.MultiViewEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 viewButton.State = newValue;
-                SingleViewObjectHolder.SetActive(!newValue);
-                MultiViewObject.SetActive(newValue);
+                SingleImageContainer.SetActive(!newValue);
+                MultiImageContainer.SetActive(newValue);
+
+                controlLeftRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtonsEntry.Value);
+                controlRightRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtonsEntry.Value);
+
                 if (newValue)
                     ImageHandler.SetMultiView();
                 else
                     ImageHandler.Update(true);
             });
 
-            buttons.Add(viewButton);
+            SingleButton categoriesButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(categoriesSubMenu)), Sprites["Category"], "Categories", "Select a view category", "Button_Categories");
 
-            ToggleButton discordWebhookToggleButton = new ToggleButton(Menus[0].Path, new Vector3(0, 1), "Discord Webhook", "Disabled", new Action<bool>(state =>
+            SingleButton actionsButton = new SingleButton(new Action(() =>
             {
-                Configuration.DiscordWebhookEntry.Value = state;
-            }), "Enable/Disable Discord Webhook", "Enable/Disable Discord Webhook", "DiscordWebhookButton", Configuration.DiscordWebhookEntry.Value, true);
-            Configuration.DiscordWebhookEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-            {
-                discordWebhookToggleButton.State = newValue;
-            });
+                if (ImageHandler.IsReloading)
+                    return;
 
-            buttons.Add(discordWebhookToggleButton);
-
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(0, 0), "File Organization", new Action(() => Menus[1].OpenSubMenu()), "Open File Organization Menu", "OrganizationMenuButton", true));
-
-            HalfButton favoriteButton = new HalfButton(Menus[0].Path, new Vector3(2, 2), new Vector3(0.5f, 0), "Favorite", new Action(ImageHandler.MovePicture), "Favorite", "FavoriteButton", true);
-
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(1, -1), new Vector3(0.5f, 1), "All", new Action(() =>
-            {
-                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.ALL);
-                favoriteButton.TextComponent.text = "Favorite";
-                favoriteButton.TextComponent.color = Color.white;
-            }), "All", "AllButton", true));
-
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(2, -1), new Vector3(0.5f, 1), "Today", new Action(() =>
-            {
-                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.TODAY);
-                favoriteButton.TextComponent.text = "Favorite";
-                favoriteButton.TextComponent.color = Color.white;
-            }), "Today", "TodayButton", true));
-
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(3, -1), new Vector3(0.5f, 1), "Favorites", new Action(() =>
-            {
-                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.FAVORITES);
-                favoriteButton.TextComponent.text = "Unfavorite";
-                favoriteButton.TextComponent.color = Color.yellow;
-            }
-            ), "Favorites", "FavoritesButton", true));
-
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(4, -1), new Vector3(0.5f, 1), "Reload", new Action(() => ImageHandler.ReloadFiles().NoAwait()), "Reload", "ReloadButton", true, Color.yellow));
-
-            SingleButton deleteConfirmButton = null;
-            SingleButton deleteCancelButton = null;
-
-            deleteConfirmButton = new SingleButton(Menus[0].Path, new Vector3(1, 2), "Delete", new Action(() =>
-            {
-                ImageHandler.DeletePicture();
-                foreach (ElementBase button in buttons)
+                bool result = ImageHandler.UpdateCurrentSelectedFile();
+                if (result)
                 {
-                    if (button.gameObject.name.Equals(newGalleryButton.name))
-                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
-                    else
-                        button.gameObject.SetActive(true);
-                }
-                deleteConfirmButton.gameObject.SetActive(false);
-                deleteCancelButton.gameObject.SetActive(false);
-            }), "Deletes an Image", "DeleteConfirmButton", true, Color.red);
+                    TabButton.SubMenu.OpenSubMenu(actionsSubMenu);
+                    ImageHandler.FetchSecondaryImage();
 
-            deleteCancelButton = new SingleButton(Menus[0].Path, new Vector3(4, 2), "Cancel", new Action(() =>
-            {
-                foreach (ElementBase button in buttons)
-                {
-                    if (button.gameObject.name.Equals(newGalleryButton.name))
-                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
-                    else
-                        button.gameObject.SetActive(true);
-                }
-                deleteConfirmButton.gameObject.SetActive(false);
-                deleteCancelButton.gameObject.SetActive(false);
-                ImageHandler.Update(false);
-            }), "Cancel", "DeleteCancelButton", true);
-
-            deleteConfirmButton.gameObject.SetActive(false);
-            deleteCancelButton.gameObject.SetActive(false);
-
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(1, 2), "Previous", new Action(ImageHandler.Previous), "Previous", "PreviousButton", true));
-            buttons.Add(favoriteButton);
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(2, 2), new Vector3(0.5f, 1), "Delete", new Action(() =>
-            {
-                if (!ImageHandler.IsReloading)
-                {
-                    buttons.ForEach(button => button.gameObject.SetActive(false));
-                    if (viewButton.State)
+                    if (ImageHandler.IsCurrentFavorite())
                     {
-                        viewButton.State = false;
-                        viewButton.OnClick.Invoke(false);
+                        FavoriteButton.Sprite = Sprites["Star"];
+                        FavoriteButton.Text = "Unfavorite";
+                        FavoriteButton.TooltipText = "Unfavorite this image";
                     }
-                    deleteConfirmButton.gameObject.SetActive(true);
-                    deleteCancelButton.gameObject.SetActive(true);
-                    ImageHandler.TitleText.text = "Please confirm:";
-                    ImageHandler.InfoText.text = "You are going to delete this image";
-                }
-            }), "Delete", "DeleteButton", true, Color.red));
-
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(3, 2), new Vector3(0.5f, 0), "Show File", new Action(ImageHandler.ShowFileInExplorer), "Show File", "ExplorerButton", true));
-            buttons.Add(new HalfButton(Menus[0].Path, new Vector3(3, 2), new Vector3(0.5f, 1), "Share", new Action(() =>
-            {
-                if (Configuration.DiscordWebhookEntry.Value)
-                {
-                    if (viewButton.State)
+                    else
                     {
-                        viewButton.State = false;
-                        viewButton.OnClick.Invoke(false);
+                        FavoriteButton.Sprite = Sprites["X"];
+                        FavoriteButton.Text = "Favorite";
+                        FavoriteButton.TooltipText = "Favorite this image";
                     }
-                    buttons.ForEach(button => button.gameObject.SetActive(false));
-                    discordWebhookButtons.ForEach(button => button.gameObject.SetActive(true));
-                    ImageHandler.TitleText.text = "Choose a Discord Webhook:";
-                    ImageHandler.InfoText.text = "You are going to share this image";
                 }
                 else
                 {
-                    UiManager.OpenSmallPopup("Action required", "Please enable Discord Webhook to use this function.", "Ok", new Action(UiManager.ClosePopup));
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Your selection is empty.", new Action(() => { }));
                 }
-            }), "Share", "ShareButton", true));
-            buttons.Add(new SingleButton(Menus[0].Path, new Vector3(4, 2), "Next", new Action(ImageHandler.Next), "Next", "NextButton", true));
+            }), Sprites["Actions"], "Actions", "Manage the current image", "Button_Actions");
 
-            rotateRightButton.GetComponent<Button>().onClick.AddListener(new Action(() => ImageHandler.RotateImage(true)));
-            rotateLeftButton.GetComponent<Button>().onClick.AddListener(new Action(() => ImageHandler.RotateImage(false)));
+            SingleButton settingsButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(settingsSubMenu)), Sprites["Settings"], "Settings", "Manage settings", "Button_Settings");
 
-            SingleButton newGallerySimpleButton = new SingleButton(Menus[0].Path, new Vector3(0, -1), "Gallery", new Action(() => UiManager.MainMenu(APIUser.CurrentUser != null && APIUser.CurrentUser.isSupporter ? 10 : 9, true)), "Open VRC+ Gallery", "GalleryButton", true, Color.yellow);
-            buttons.Add(newGallerySimpleButton);
-            newGalleryButton = newGallerySimpleButton.gameObject;
-            newGalleryButton.SetActive(Configuration.MoveGalleryButtonEntry.Value);
+            mainMenuButtonGroup.AddButton(viewButton);
+            mainMenuButtonGroup.AddButton(categoriesButton);
+            mainMenuButtonGroup.AddButton(actionsButton);
+            mainMenuButtonGroup.AddButton(settingsButton);
+            TabButton.SubMenu.AddButtonGroup(mainMenuButtonGroup);
 
-            Animator animator = SingleViewObjectHolder.transform.GetComponent<Animator>();
+            new ButtonHeader(TabButton.SubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Version " + ScreenshotManagerMod.Version, "Version_Header");
 
-            SingleViewObject.GetComponent<Button>().onClick.AddListener(new Action(() =>
+            HeaderButton headerButton = new HeaderButton(new Action(() => ImageHandler.ReloadFiles().NoAwait()), Sprites["Reload"], "Reload all images", "Button_ReloadImages");
+            TabButton.SubMenu.AddHeaderButton(headerButton);
+            headerButton.GameObject.transform.localPosition = new Vector3(0, 0, -1);
+
+            // Category menu buttons
+
+            ButtonGroup categoryMenuButtonGroup = new ButtonGroup("Categories");
+            categoryMenuButtonGroup.ButtonLayoutGroup.constraintCount = 1;
+            categoryMenuButtonGroup.ButtonLayoutGroup.cellSize = new Vector2(900, 100);
+
+            WideButton categoryAllImagesButton = new WideButton(new Action(() =>
             {
-                if (imageScaled)
-                {
-                    animator.SetBool("Size Trigger", false);
-                    foreach (ElementBase button in buttons)
-                    {
-                        if (button.gameObject.name.Equals(newGallerySimpleButton.gameObject.name))
-                            button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
-                        else
-                            button.gameObject.SetActive(true);
-                    }
-                    imageScaled = false;
-                }
-                else if (!deleteConfirmButton.gameObject.activeSelf && !discordWebhookButtons.Any(button => button.gameObject.activeSelf))
-                {
-                    animator.SetBool("Size Trigger", true);
-                    buttons.ForEach(buttons => buttons.gameObject.SetActive(false));
-                    imageScaled = true;
-                }
-            }));
+                TabButton.SubMenu.PopSubMenu();
+                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.All);
+            }), "All Images", "Show all images", "Button_CategoryAll");
 
-            GameObject newElements = GameObject.Find("UserInterface/QuickMenu/QuickMenu_NewElements");
-
-            EnableDisableListener menuListener = Menus[0].gameObject.AddComponent<EnableDisableListener>();
-
-            menuListener.OnEnableEvent += new Action(() =>
+            WideButton categoryTodaysImagesButton = new WideButton(new Action(() =>
             {
-                MenuUI.SetActive(true);
-                newElements.SetActive(false);
-                if (ShowPhotoOrganizationWarning)
+                TabButton.SubMenu.PopSubMenu();
+                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.Today);
+            }), "Today's Images", "Show all images from today", "Button_CategoryTodays");
+
+            WideButton categoryYesterdaysImagesButton = new WideButton(new Action(() =>
+            {
+                TabButton.SubMenu.PopSubMenu();
+                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.Yesterday);
+            }), "Yesterday's Images", "Show all images from the last day", "Button_CategoryYesterdays");
+
+            WideButton categoryFavoriteImagesButton = new WideButton(new Action(() =>
+            {
+                TabButton.SubMenu.PopSubMenu();
+                ImageHandler.ChangeCategory(ImageHandler.ImageMenuCategory.Favorites);
+            }), "Favorite Images", "Show all favorite images", "Button_CategoryFavorite");
+
+            categoryMenuButtonGroup.AddButton(categoryAllImagesButton);
+            categoryMenuButtonGroup.AddButton(categoryTodaysImagesButton);
+            categoryMenuButtonGroup.AddButton(categoryYesterdaysImagesButton);
+            categoryMenuButtonGroup.AddButton(categoryFavoriteImagesButton);
+            categoriesSubMenu.AddButtonGroup(categoryMenuButtonGroup);
+
+            // Actions menu buttons
+
+            ActionsMenuInfoButtonHeader = new ButtonHeader(actionsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Actions", "ActionsTitle_Header");
+            ActionsMenuInfoButtonHeader.RectTransform.SetSiblingIndex(0);
+
+            ButtonGroup actionsMenuButtonGroup = new ButtonGroup("Actions", adjustAlignment: true);
+            new ButtonHeader(actionsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Actions", "Actions_Header");
+
+            FavoriteButton = new SingleButton(new Action(() =>
+            {
+                ImageHandler.ChangeFavoriteState();
+                if (ImageHandler.IsCurrentFavorite())
                 {
-                    UiManager.OpenSmallPopup("Warning", "PhotoOrganization Mod was found in your game. Consider about removing it when using ScreenshotManager because it has its own Organization Features and can interfere with PhotoOrganization. If you need help or having trouble go to the GitHub Page.", "Ok", new Action(UiManager.ClosePopup));
-                    ShowPhotoOrganizationWarning = false;
+                    FavoriteButton.Sprite = Sprites["Star"];
+                    FavoriteButton.Text = "Unfavorite";
+                    FavoriteButton.TooltipText = "Unfavorite this image";
+                }
+                else
+                {
+                    FavoriteButton.Sprite = Sprites["X"];
+                    FavoriteButton.Text = "Favorite";
+                    FavoriteButton.TooltipText = "Favorite this image";
+                }
+            }), Sprites["X"], "Unfavorite", "Unfavorite this image", "Button_Favorite");
+
+            actionsButton.OnClick += new Action(() =>
+            {
+                if (ImageHandler.IsCurrentFavorite())
+                {
+                    FavoriteButton.Sprite = Sprites["Star"];
+                    FavoriteButton.Text = "Unfavorite";
+                    FavoriteButton.TooltipText = "Unfavorite this image";
+                }
+                else
+                {
+                    FavoriteButton.Sprite = Sprites["X"];
+                    FavoriteButton.Text = "Favorite";
+                    FavoriteButton.TooltipText = "Favorite this image";
                 }
             });
 
-            menuListener.OnDisableEvent += new Action(() =>
+            SingleButton shareButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(webhookSubMenu)), Sprites["Share"], "Share", "Share this image on via Discord Webhook", "Button_Share");
+
+            SingleButton uploadToGalleryButton = null;
+            uploadToGalleryButton = new SingleButton(new Action(() =>
             {
-                animator.Rebind();
-                animator.Update(0);
-                animator.SetBool("Size Trigger", false);
-                imageScaled = false;
-                deleteConfirmButton.gameObject.SetActive(false);
-                deleteCancelButton.gameObject.SetActive(false);
-                discordWebhookButtons.ForEach(button =>
+                if (APIUser.CurrentUser.isSupporter)
                 {
-                    button.gameObject.SetActive(false);
-                    button.ButtonComponent.enabled = true;
-                });
-                foreach (ElementBase button in buttons)
-                {
-                    if (button.gameObject.name.Equals(newGallerySimpleButton.gameObject.name))
-                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
-                    else
-                        button.gameObject.SetActive(true);
+                    uploadToGalleryButton.ButtonComponent.enabled = false;
+                    ImageHandler.UploadToGallery(new Action(() => UiManager.PushQuickMenuAlert("Gallery - Uploading image...")),
+                            new Action(() =>
+                            {
+                                uploadToGalleryButton.ButtonComponent.enabled = true;
+                                UiManager.PushQuickMenuAlert("Gallery - Image was uploaded successfully.");
+                            }),
+                            new Action(() =>
+                            {
+                                uploadToGalleryButton.ButtonComponent.enabled = true;
+                                UiManager.PushQuickMenuAlert("Gallery - Failed to upload image.");
+                            }));
                 }
-                ImageHandler.Update(false);
-                MenuUI.SetActive(false);
-                newElements.SetActive(true);
-            });
+                else
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "You need VRC+ to use this function.", null);
+                }
+            }), Sprites["Upload"], "Upload to Gallery", "Upload this image to your VRChat Gallery (requires VRC+)", "Button_Upload");
 
-            // Organization menu
-
-            new SingleButton(Menus[1].Path, new Vector3(4, 2), "Back", new Action(() => Menus[0].OpenSubMenu()), "Press to go back", "BackButton", true, Color.yellow);
-
-            ToggleButton organizationToggleButton = new ToggleButton(Menus[1].Path, new Vector3(1, 0), "File Organization", "Disabled", new Action<bool>(state =>
+            SingleButton deleteButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Delete Image", "Do you want to delete this image?", "YES", "NO", new Action(() =>
             {
-                Configuration.FileOrganizationEntry.Value = state;
-            }), "Toggle File Organization", "Toggle File Organization", "FileOrganizationButton", Configuration.FileOrganizationEntry.Value, true);
-            Configuration.FileOrganizationEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-            {
-                organizationToggleButton.State = newValue;
-            });
+                ImageHandler.DeletePicture();
+                TabButton.SubMenu.CloseAllSubMenus();
+            }), new Action(() => { }))), Sprites["Trash"], "Delete", "Delete this image", "Button_Delete");
 
-            new SingleButton(Menus[1].Path, new Vector3(2, 0), "Manually Organize", new Action(() =>
+            SingleButton importToSteamButton = null;
+            importToSteamButton = new SingleButton(new Action(() =>
+            {
+                if (!SteamIntegration.Enabled)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Steam Integration is disabled because it failed to load the Steam API.", new Action(() => { }));
+                    return;
+                }
+
+                bool result = ImageHandler.ImportToSteam();
+                if (result)
+                    UiManager.PushQuickMenuAlert("Steam - Image was imported successfully.");
+                else
+                    UiManager.PushQuickMenuAlert("Steam - Failed to import image.");
+            }), Sprites["Steam"], "Import to Steam", "Import this image to Steam and make it uploadable for the Steam Cloud", "Button_Import");
+
+            SingleButton showInExplorerButton = new SingleButton(new Action(() => ImageHandler.ShowFileInExplorer()), Sprites["File"], "Open Explorer", "Open Windows Explorer and select this image", "Button_Explorer");
+
+            actionsMenuButtonGroup.AddButton(FavoriteButton);
+            actionsMenuButtonGroup.AddButton(shareButton);
+            actionsMenuButtonGroup.AddButton(uploadToGalleryButton);
+            actionsMenuButtonGroup.AddButton(deleteButton);
+            actionsMenuButtonGroup.AddButton(importToSteamButton);
+            actionsMenuButtonGroup.AddButton(showInExplorerButton);
+            actionsSubMenu.AddButtonGroup(actionsMenuButtonGroup);
+
+            // Settings menu buttons
+
+            ButtonGroup settingsMenuButtonGroup1 = new ButtonGroup("FileOrganization_Settings", adjustAlignment: true);
+            new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "File Organization", "FileOrganization_Header");
+
+            ToggleButton fileOrganizationButton = new ToggleButton(new Action<bool>(state => Configuration.FileOrganizationEntry.Value = state), Sprites["Organization"], Sprites["X"], "File Organization", "File Organization", "Disable File Organization", "Enable File Organization", "Button_FileOrganization", Configuration.FileOrganizationEntry.Value);
+            Configuration.FileOrganizationEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => fileOrganizationButton.State = newValue);
+
+            SingleButton manuallyOrganizeButton = new SingleButton(new Action(() =>
             {
                 if (Configuration.FileOrganizationEntry.Value)
                     FileOrganization.OrganizeAll();
                 else
-                    UiManager.OpenSmallPopup("Action required", "Please enable File Organisation.", "Ok", new Action(UiManager.ClosePopup));
-            }), "Organize all pictures (can cause lag)", "ManuallyFileOrganizationButton", true);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null);
+            }), Sprites["Manually"], "Manually Organize", "Organize all files manually", "ManuallyFileOrganizationButton");
 
-            new SingleButton(Menus[1].Path, new Vector3(3, 0), "Reset Organization", new Action(() => FileOrganization.Reset()), "Reset Organization (can cause lag)", "ResetOrganizationButton", true, Color.red);
+            SingleButton resetOrganizationButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset()), new Action(() => { }))), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
 
-            EnableDisableListener organizeMenuListener = Menus[1].gameObject.AddComponent<EnableDisableListener>();
+            settingsMenuButtonGroup1.AddButton(fileOrganizationButton);
+            settingsMenuButtonGroup1.AddButton(manuallyOrganizeButton);
+            settingsMenuButtonGroup1.AddButton(resetOrganizationButton);
+            settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup1);
 
-            organizeMenuListener.OnEnableEvent += new Action(() =>
-            {
-                MenuUI.SetActive(false);
-                newElements.SetActive(true);
-            });
+            ButtonGroup settingsMenuButtonGroup2 = new ButtonGroup("Main_Settings", adjustAlignment: true);
+            new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Settings", "Settings_Header");
 
-            // Settings menu
-
-            new SingleButton(Menus[2].Path, new Vector3(4, 2), "Back", new Action(() => Menus[0].OpenSubMenu()), "Press to go back", "BackButton", true, Color.yellow);
-
-            ToggleButton menuOptionToggleButton = new ToggleButton(Menus[2].Path, new Vector3(1, 0), "Tab Button", "Menu Button", new Action<bool>(state =>
-            {
-                Configuration.TabButtonEntry.Value = state;
-            }), "Change Button Type", "Change Button Type", "ButtonTypeButton", Configuration.TabButtonEntry.Value, true);
+            ToggleButton buttonTypeButton = new ToggleButton(new Action<bool>(state => Configuration.TabButtonEntry.Value = state), Sprites["Tab"], Sprites["X"], "Tab Button", "Menu Button", "Switch to Camera Menu Button", "Switch to Tab Button", "Button_MenuType", Configuration.FileOrganizationEntry.Value);
             Configuration.TabButtonEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
-                menuOptionToggleButton.State = newValue;
-                tabButton.gameObject.SetActive(newValue);
-                if (uixButton != null)
+                buttonTypeButton.State = newValue;
+                TabButton.GameObject.SetActive(newValue);
+                menuButton.GameObject.SetActive(!newValue);
+            });
+
+            ToggleButton webhookStateButton = new ToggleButton(new Action<bool>(state => Configuration.DiscordWebhookEntry.Value = state), Sprites["Share"], Sprites["X"], "Discord Webhook", "Discord Webhook", "Disable Discord Webhook", "Enable Discord Webhook", "Button_WebhookState", Configuration.DiscordWebhookEntry.Value);
+            Configuration.DiscordWebhookEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => webhookStateButton.State = newValue);
+
+            ToggleButton showRotationControlButton = new ToggleButton(new Action<bool>(state => Configuration.ShowRotationButtonsEntry.Value = state), Sprites["RotateRight"], Sprites["X"], "Rotation Buttons", "Rotation Buttons", "Hide rotation buttons", "Show rotation buttons", "Button_RotationButtonsState", Configuration.ShowRotationButtonsEntry.Value);
+            Configuration.ShowRotationButtonsEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            {
+                showRotationControlButton.State = newValue;
+                controlLeftRotateButton.gameObject.SetActive(!Configuration.MultiViewEntry.Value && newValue);
+                controlRightRotateButton.gameObject.SetActive(!Configuration.MultiViewEntry.Value && newValue);
+            });
+
+            settingsMenuButtonGroup2.AddButton(buttonTypeButton);
+            settingsMenuButtonGroup2.AddButton(webhookStateButton);
+            settingsMenuButtonGroup2.AddButton(showRotationControlButton);
+            settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup2);
+
+            ButtonGroup settingsMenuButtonGroup3 = new ButtonGroup("Settings_Actions", adjustAlignment: true);
+            new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Other Actions", "Actions_Header");
+
+            SingleButton reloadWebhooksButton = new SingleButton(new Action(() => ReloadDiscordWebhookButtons()), Sprites["Reload"], "Reload Webhooks", "Reload all Webhook files", "Button_ReloadWebhooks");
+            SingleButton openGitHubPageButton = new SingleButton(new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), Sprites["GitHub"], "Open GitHub", "Open the GitHub page of this mod", "Button_GitHub");
+
+            settingsMenuButtonGroup3.AddButton(reloadWebhooksButton);
+            settingsMenuButtonGroup3.AddButton(openGitHubPageButton);
+            settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup3);
+
+            // Animations
+
+            Animator sizeAnimator = SingleImageContainer.transform.GetComponent<Animator>();
+
+            SingleImageContainer.transform.Find("SingleImage_Mask/Image").GetComponent<Button>().onClick.AddListener(new Action(() =>
+            {
+                if (sizeAnimator.GetBool("Size Trigger"))
                 {
-                    uixButton.SetActive(!newValue && Configuration.UseUIXEntry.Value);
-                    menuButton.gameObject.SetActive(!newValue && !Configuration.UseUIXEntry.Value);
+                    sizeAnimator.SetBool("Size Trigger", false);
+                    singleImageStyle.enabled = true;
                 }
                 else
                 {
-                    menuButton.gameObject.SetActive(!newValue);
+                    sizeAnimator.SetBool("Size Trigger", true);
+                    singleImageStyle.enabled = false;
                 }
+            }));
+
+            EnableDisableListener menuListener = TabButton.SubMenu.GameObject.AddComponent<EnableDisableListener>();
+            menuListener.OnDisableEvent += new Action(() =>
+            {
+                sizeAnimator.Rebind();
+                sizeAnimator.Update(0);
+                sizeAnimator.SetBool("Size Trigger", false);
+                singleImageStyle.enabled = true;
+                Configuration.Save();
+                //TabButton.SubMenu.CloseAllSubMenus();
             });
 
-            ToggleButton useUIXToggleButton = new ToggleButton(Menus[2].Path, new Vector3(2, 0), "Use UIX", "Disabled", new Action<bool>(state =>
-            {
-                Configuration.UseUIXEntry.Value = state;
-            }), "Use UIX as Menu Button", "Use UIX as Menu Button", "UseUIXButton", Configuration.UseUIXEntry.Value, true);
-            Configuration.UseUIXEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-            {
-                useUIXToggleButton.State = newValue;
-            });
-
-            ToggleButton moveGalleryToggleButton = new ToggleButton(Menus[2].Path, new Vector3(3, 0), "Move Gallery Button", "Disabled", new Action<bool>(state =>
-            {
-                Configuration.MoveGalleryButtonEntry.Value = state;
-            }), "Move Gallery Button to ScreenshotManager Menu", "Move Gallery Button to ScreenshotManager Menu", "MoveGalleryButton", Configuration.MoveGalleryButtonEntry.Value, true);
-            Configuration.MoveGalleryButtonEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-            {
-                moveGalleryToggleButton.State = newValue;
-                originalGalleryButton.SetActive(!newValue);
-                newGalleryButton.SetActive(newValue);
-            });
-
-            ToggleButton showRotationButtons = new ToggleButton(Menus[2].Path, new Vector3(1, 1), "Show Rotation Buttons", "Hidden", new Action<bool>(state =>
-            {
-                Configuration.ShowRotationButtonsEntry.Value = state;
-            }), "Show/Hide Image rotation buttons", "Show/Hide Image rotation buttons", "ShowRotationButtonsButton", Configuration.ShowRotationButtonsEntry.Value, true);
-            Configuration.ShowRotationButtonsEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
-            {
-                showRotationButtons.State = newValue;
-                rotateLeftButton.SetActive(newValue);
-                rotateRightButton.SetActive(newValue);
-            });
-
-            new SingleButton(Menus[2].Path, new Vector3(4, 0), "Reload Webhooks", new Action(() => ReloadDiscordWebhookButtons()), "Reloads the DiscordWebhook files", "ReloadWebhooksButton", true);
-
-            new SingleButton(Menus[2].Path, new Vector3(1, 2), "GitHub Page", new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), "Opens the GitHub Repository of this mod", "GithubButton", true);
-
-            EnableDisableListener optionMenuListener = Menus[2].gameObject.AddComponent<EnableDisableListener>();
-
-            optionMenuListener.OnEnableEvent += new Action(() =>
-            {
-                MenuUI.SetActive(false);
-                newElements.SetActive(true);
-            });
-
-            // Help menu
-
-            new SingleButton(Menus[3].Path, new Vector3(5, 2), "Back", new Action(() => Menus[0].OpenSubMenu()), "Press to go back", "BackButton", true, Color.yellow);
-
-            List<HelpCategory> helpCategories = new List<HelpCategory>();
-
-            GameObject infoText = HelpRect.Find("Info").gameObject;
-            GameObject contentParent = HelpRect.Find("HelpView").gameObject;
-            WideButton helpBackButton = null;
-
-            WideButton moreDetailsButton = new WideButton(Menus[3].Path, new Vector3(2, 2), new Vector3(0.25f, 1), "More details on GitHub", new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), "Opens the GitHub Repository of this mod", "GithubButton", true);
-
-            helpBackButton = new WideButton(Menus[3].Path, new Vector3(2, -1), new Vector3(0.25f, 1), "Back to selection", new Action(() =>
-             {
-                 helpCategories.ForEach(category => category.Content.gameObject.SetActive(false));
-                 helpCategories.ForEach(category => category.Button.gameObject.SetActive(true));
-                 helpBackButton.gameObject.SetActive(false);
-                 infoText.SetActive(true);
-                 moreDetailsButton.gameObject.SetActive(true);
-             }), "Back", "HelpBackButton", true, Color.yellow);
-
-            Action categoryClickAction = new Action(() =>
-            {
-                infoText.SetActive(false);
-                helpBackButton.gameObject.SetActive(true);
-                helpCategories.ForEach(category => category.Button.gameObject.SetActive(false));
-                moreDetailsButton.gameObject.SetActive(false);
-            });
-
-            helpCategories.Add(new HelpCategory("File Organization", contentParent, Menus[3].Path, new Vector3(2, 0), new Vector3(0.25f, 0), categoryClickAction));
-            helpCategories.Add(new HelpCategory("Discord Webhooks", contentParent, Menus[3].Path, new Vector3(2, 0), new Vector3(0.25f, 1), categoryClickAction));
-            helpCategories.Add(new HelpCategory("Image Loading", contentParent, Menus[3].Path, new Vector3(2, 1), new Vector3(0.25f, 0), categoryClickAction));
-            helpCategories.Add(new HelpCategory("Menu Settings", contentParent, Menus[3].Path, new Vector3(2, 1), new Vector3(0.25f, 1), categoryClickAction));
-            helpCategories.Add(new HelpCategory("Files & Time", contentParent, Menus[3].Path, new Vector3(2, 2), new Vector3(0.25f, 0), categoryClickAction));
-
-            helpBackButton.gameObject.SetActive(false);
-
-            EnableDisableListener helpMenuListener = Menus[3].gameObject.AddComponent<EnableDisableListener>();
-
-            helpMenuListener.OnEnableEvent += new Action(() =>
-            {
-                HelpUI.SetActive(true);
-                newElements.SetActive(false);
-            });
-
-            helpMenuListener.OnDisableEvent += new Action(() =>
-            {
-                helpCategories.ForEach(category =>
-                {
-                    category.Content.SetActive(false);
-                    category.Button.gameObject.SetActive(true);
-                });
-                infoText.SetActive(true);
-                helpBackButton.gameObject.SetActive(false);
-                moreDetailsButton.gameObject.SetActive(true);
-                HelpUI.SetActive(false);
-                newElements.SetActive(true);
-            });
-
-            UiManager.OnQuickMenuClosed += new Action(() => Configuration.Save());
+            EnableDisableListener settingsMenuListener = settingsSubMenu.GameObject.AddComponent<EnableDisableListener>();
+            settingsMenuListener.OnDisableEvent += new Action(() => Configuration.Save());
         }
 
         public static void ReloadDiscordWebhookButtons()
         {
-            foreach (SingleButton button in discordWebhookButtons)
-            {
-                button.Destroy();
-            }
-
-            discordWebhookButtons.Clear();
-
-            SingleButton backButton = new SingleButton(Menus[0].Path, new Vector3(5, 2), "Cancel", new Action(() =>
-            {
-                foreach (ElementBase button in buttons)
-                {
-                    if (button.gameObject.name.Equals(newGalleryButton.name))
-                        button.gameObject.SetActive(Configuration.MoveGalleryButtonEntry.Value);
-                    else
-                        button.gameObject.SetActive(true);
-                }
-                discordWebhookButtons.ForEach(button =>
-                {
-                    button.gameObject.SetActive(false);
-                    button.ButtonComponent.enabled = true;
-                });
-                ImageHandler.Update(false);
-            }), "Cancel", "WebhookCancelButton", true, Color.yellow);
-
-            backButton.gameObject.SetActive(false);
-            discordWebhookButtons.Add(backButton);
-
+            webhookSubMenu.ClearButtonGroups();
             Configuration.LoadDiscordWebhooks();
             foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhookConfig in Configuration.DiscordWebHooks)
             {
-                SingleButton button = null;
-                button = new SingleButton(webhookList, new Vector3(0, 0), webhookConfig.Key, new Action(() =>
+                ButtonGroup buttonGroup = new ButtonGroup("Webhook_" + webhookConfig.Key, parent: webhookSubMenu.PageLayoutGroup.rectTransform);
+                buttonGroup.ButtonLayoutGroup.cellSize = new Vector2(800, 100);
+                buttonGroup.ButtonLayoutGroup.rectTransform.sizeDelta = new Vector2(3760, 120);
+                buttonGroup.ButtonLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
+                WideButton button = new WideButton(new Action(() =>
                 {
-                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/"))
+                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://media.guilded.gg/webhook/"))
                     {
-                        ImageHandler.SendToDiscordWebhook(webhookConfig.Key, webhookConfig.Value);
-                        button.ButtonComponent.enabled = false;
+                        ImageHandler.SendToDiscordWebhook(webhookConfig.Key, webhookConfig.Value,
+                            new Action(() => UiManager.PushQuickMenuAlert("Webhook - Uploading image...")),
+                            new Action(() => UiManager.PushQuickMenuAlert("Webhook - Image was uploaded successfully.")),
+                            new Action(() => UiManager.PushQuickMenuAlert("Webhook - Failed to upload image.")));
+                        TabButton.SubMenu.PopSubMenu();
                     }
                     else
                     {
-                        UiManager.OpenSmallPopup("Action required", "No valid Discord Webhook URL found!", "Ok", new Action(UiManager.ClosePopup));
+                        UiManager.ShowQuickMenuInformationPopup("Warning", "The given Webhook URL is invalid.", null);
                     }
-                }), webhookConfig.Key, webhookConfig.Key + "Button", true);
-                button.gameObject.SetActive(false);
-                discordWebhookButtons.Add(button);
+                }), webhookConfig.Key, "Send to " + webhookConfig.Key, "Button_" + webhookConfig.Key, buttonGroup.ButtonLayoutGroup.transform);
+                buttonGroup.AddButton(button);
+                webhookSubMenu.AddButtonGroup(buttonGroup);
             }
         }
     }

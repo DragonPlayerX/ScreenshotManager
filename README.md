@@ -64,7 +64,7 @@ For "Username" you can use **{vrcname}** and for "Message" you can use **{vrcnam
 
 ## Files & Time
 
-ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file but this could be reset if you copy files or maybe in some other cases. Otherwise the last write time gets modfied when you edit the image outside of the game (ingame rotation does keep the old time value). Normally you should be fine with the default but you can change it in the MelonPreferences file.
+ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file but this could be reset if you copy files or maybe in some other cases. Otherwise the last write time gets modified when you edit the image outside of the game (ingame rotation does keep the old time value). Normally you should be fine with the default but you can change it in the MelonPreferences file.
 
 ## Credits
 

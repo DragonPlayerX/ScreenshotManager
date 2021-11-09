@@ -73,7 +73,7 @@ namespace ScreenshotManager.Core
 
         public static void PatchMethod()
         {
-            MethodInfo method = typeof(VRC.UserCamera.CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(it => it.GetParameters().Length == 2 && XrefScanner.XrefScan(it).Any(jt => jt.Type == XrefType.Global && jt.ReadAsObject()?.ToString() == "{0}/VRChat/VRChat_{1}x{2}_{3}.png"));
+            MethodInfo method = typeof(VRC.UserCamera.CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(it => it.GetParameters().Length == 2 && XrefScanner.XrefScan(it).Any(jt => jt.Type == XrefType.Global && jt.ReadAsObject()?.ToString() == "{0}/VRChat/{1}/VRChat_{2}x{3}_{4}.png"));
             ScreenshotManagerMod.Instance.HarmonyInstance.Patch(method, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPatch), BindingFlags.Static | BindingFlags.NonPublic)));
             MelonLogger.Msg("Patched screenshot directory method.");
         }
