@@ -13,18 +13,19 @@ namespace ScreenshotManager.Config
 
         private static readonly MelonPreferences_Category Category = MelonPreferences.CreateCategory("ScreenshotManager", "Screenshot Manager");
 
-        public static MelonPreferences_Entry<string> ScreenshotDirectoryEntry;
-        public static MelonPreferences_Entry<bool> FileOrganizationEntry;
-        public static MelonPreferences_Entry<string> FileOrganizationFolderEntry;
-        public static MelonPreferences_Entry<string> FileOrganizationFileEntry;
-        public static MelonPreferences_Entry<bool> DiscordWebhookEntry;
-        public static MelonPreferences_Entry<bool> TabButtonEntry;
-        public static MelonPreferences_Entry<int> TodayHourOffsetEntry;
-        public static MelonPreferences_Entry<bool> MultiViewEntry;
-        public static MelonPreferences_Entry<int> LastCategoryEntry;
-        public static MelonPreferences_Entry<bool> MoveGalleryButtonEntry;
-        public static MelonPreferences_Entry<bool> UseFileCreationTimeEntry;
-        public static MelonPreferences_Entry<bool> ShowRotationButtonsEntry;
+        public static MelonPreferences_Entry<string> ScreenshotDirectory;
+        public static MelonPreferences_Entry<bool> FileOrganization;
+        public static MelonPreferences_Entry<string> FileOrganizationFolder;
+        public static MelonPreferences_Entry<string> FileOrganizationFile;
+        public static MelonPreferences_Entry<bool> DiscordWebhook;
+        public static MelonPreferences_Entry<bool> TabButton;
+        public static MelonPreferences_Entry<int> TodayHourOffset;
+        public static MelonPreferences_Entry<bool> MultiView;
+        public static MelonPreferences_Entry<int> LastCategory;
+        public static MelonPreferences_Entry<bool> UseFileCreationTime;
+        public static MelonPreferences_Entry<bool> ShowRotationButtons;
+        public static MelonPreferences_Entry<bool> WriteImageMetadata;
+        public static MelonPreferences_Entry<bool> AutoSelectLatest;
 
         public static bool HasChanged;
 
@@ -32,18 +33,19 @@ namespace ScreenshotManager.Config
 
         public static void Init()
         {
-            ScreenshotDirectoryEntry = CreateEntry("ScreenshotDirectory", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "\\VRChat", "Screenshot Directory");
-            FileOrganizationEntry = CreateEntry("FileOrganization", false, "Enable File Organization");
-            FileOrganizationFolderEntry = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
-            FileOrganizationFileEntry = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
-            DiscordWebhookEntry = CreateEntry("DiscordWebHook", false, "Enable Discord Webhook");
-            TabButtonEntry = CreateEntry("TabButton", true, "TabButton Enabled");
-            TodayHourOffsetEntry = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
-            MultiViewEntry = CreateEntry("MultiView", false, "MultiView Enabled");
-            LastCategoryEntry = CreateEntry("LastCategory", 1, "Last Category");
-            MoveGalleryButtonEntry = CreateEntry("MoveGalleryButton", false, "Move Gallery Button");
-            UseFileCreationTimeEntry = CreateEntry("UseFileCreationTime", false, "Use File Creation Time");
-            ShowRotationButtonsEntry = CreateEntry("ShowRotationButtons", true, "Show Rotation Buttons");
+            ScreenshotDirectory = CreateEntry("ScreenshotDirectory", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "\\VRChat", "Screenshot Directory");
+            FileOrganization = CreateEntry("FileOrganization", false, "File Organization");
+            FileOrganizationFolder = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
+            FileOrganizationFile = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
+            DiscordWebhook = CreateEntry("DiscordWebHook", false, "Discord Webhook");
+            TabButton = CreateEntry("TabButton", true, "TabButton");
+            TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
+            MultiView = CreateEntry("MultiView", false, "MultiView");
+            LastCategory = CreateEntry("LastCategory", 1, "Last Category");
+            UseFileCreationTime = CreateEntry("UseFileCreationTime", false, "Use File Creation Time");
+            ShowRotationButtons = CreateEntry("ShowRotationButtons", true, "Show Rotation Buttons");
+            WriteImageMetadata = CreateEntry("WriteImageMetadata", true, "Image Metadata");
+            AutoSelectLatest = CreateEntry("AutoSelectLatest", false, "Auto Select Latest Image");
 
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");

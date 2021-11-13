@@ -12,7 +12,7 @@ using ScreenshotManager.Resources;
 using ScreenshotManager.UI;
 using ScreenshotManager.UI.Components;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.0.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.1.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 
 namespace ScreenshotManager
@@ -20,11 +20,9 @@ namespace ScreenshotManager
     public class ScreenshotManagerMod : MelonMod
     {
 
-        public static readonly string Version = "2.0.0";
+        public static readonly string Version = "2.1.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
-
-        public MelonMod ActiveBackgroundMod;
 
         public override void OnApplicationStart()
         {
@@ -48,11 +46,11 @@ namespace ScreenshotManager
                     ResourceHandler.ExtractResource("DiscordWebhook.exe", "Executables");
             }
 
-            if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value))
-                Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value);
+            if (!Directory.Exists(Configuration.ScreenshotDirectory.Value))
+                Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value);
 
             FileOrganization.PatchMethod();
-            if (Configuration.FileOrganizationEntry.Value)
+            if (Configuration.FileOrganization.Value)
                 FileOrganization.OrganizeAll();
 
             FileDataHandler.Init();

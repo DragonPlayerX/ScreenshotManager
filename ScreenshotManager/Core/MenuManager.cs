@@ -60,7 +60,6 @@ namespace ScreenshotManager.Core
             { "Blocked", null },
             { "Reload", null },
             { "GitHub", null },
-            { "Heart", null },
             { "Share", null },
             { "Trash", null },
             { "Star", null },
@@ -69,7 +68,8 @@ namespace ScreenshotManager.Core
             { "Upload", null },
             { "RotateRight", null },
             { "RotateLeft", null },
-            { "Steam", null }
+            { "Steam", null },
+            { "Data", null },
         };
 
         public static void Init()
@@ -101,9 +101,9 @@ namespace ScreenshotManager.Core
             SecondaryImageContainerRect = SecondaryImageContainer.GetComponent<RectTransform>();
 
             SingleImageContainer = MainImageContainerRect.Find("SingleImage_Container").gameObject;
-            SingleImageContainer.SetActive(!Configuration.MultiViewEntry.Value);
+            SingleImageContainer.SetActive(!Configuration.MultiView.Value);
             MultiImageContainer = MainImageContainerRect.Find("MultiImage_Container").gameObject;
-            MultiImageContainer.SetActive(Configuration.MultiViewEntry.Value);
+            MultiImageContainer.SetActive(Configuration.MultiView.Value);
 
             MainImageContainer.SetLayerRecursive(12);
             SecondaryImageContainer.SetLayerRecursive(12);
@@ -114,18 +114,27 @@ namespace ScreenshotManager.Core
             TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "ScreenshotManager_Main", "Page_ScreenshotManager");
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            TabButton.GameObject.SetActive(Configuration.TabButtonEntry.Value);
+            TabButton.GameObject.SetActive(Configuration.TabButton.Value);
             TabButton.OnClick += new Action(() =>
             {
                 for (int i = 0; i < styleQueue.Count; i++)
-                {
                     styleQueue.Dequeue().Invoke();
-                }
+
+                if (Configuration.AutoSelectLatest.Value)
+                    ImageHandler.SelectLatest();
             });
 
             SingleButton menuButton = new SingleButton(new Action(() => TabButton.MenuTab.ShowTabContent()), Sprites["Gallery"], "Screenshot Manager", "Open Screenshot Manager", "Button_ScreenshotManager");
             menuButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
-            menuButton.GameObject.SetActive(!Configuration.TabButtonEntry.Value);
+            menuButton.GameObject.SetActive(!Configuration.TabButton.Value);
+            menuButton.OnClick += new Action(() =>
+            {
+                for (int i = 0; i < styleQueue.Count; i++)
+                    styleQueue.Dequeue().Invoke();
+
+                if (Configuration.AutoSelectLatest.Value)
+                    ImageHandler.SelectLatest();
+            });
 
             MainImageContainerRect.parent = TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport/VerticalLayoutGroup");
             MainImageContainerRect.sizeDelta = new Vector2(1024, 1152 / 2);
@@ -164,8 +173,8 @@ namespace ScreenshotManager.Core
             controlRightRotateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
             controlRightRotateButton.onClick.AddListener(new Action(() => ImageHandler.RotateImage(ImageHandler.Direction.Right)));
 
-            controlLeftRotateButton.gameObject.SetActive(Configuration.ShowRotationButtonsEntry.Value);
-            controlRightRotateButton.gameObject.SetActive(Configuration.ShowRotationButtonsEntry.Value);
+            controlLeftRotateButton.gameObject.SetActive(Configuration.ShowRotationButtons.Value);
+            controlRightRotateButton.gameObject.SetActive(Configuration.ShowRotationButtons.Value);
 
             Transform textContainer = SecondaryImageContainerRect.Find("TextContainer");
 
@@ -247,15 +256,15 @@ namespace ScreenshotManager.Core
 
             ButtonGroup mainMenuButtonGroup = new ButtonGroup("Actions");
 
-            ToggleButton viewButton = new ToggleButton(new Action<bool>(state => Configuration.MultiViewEntry.Value = state), Sprites["Grid"], Sprites["Gallery"], "Multi View", "Single View", "Switch to single image view mode", "Switch to multi image view mode", "Button_View", Configuration.MultiViewEntry.Value);
-            Configuration.MultiViewEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            ToggleButton viewButton = new ToggleButton(new Action<bool>(state => Configuration.MultiView.Value = state), Sprites["Grid"], Sprites["Gallery"], "Multi View", "Single View", "Switch to single image view mode", "Switch to multi image view mode", "Button_View", Configuration.MultiView.Value);
+            Configuration.MultiView.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 viewButton.State = newValue;
                 SingleImageContainer.SetActive(!newValue);
                 MultiImageContainer.SetActive(newValue);
 
-                controlLeftRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtonsEntry.Value);
-                controlRightRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtonsEntry.Value);
+                controlLeftRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtons.Value);
+                controlRightRotateButton.gameObject.SetActive(!newValue && Configuration.ShowRotationButtons.Value);
 
                 if (newValue)
                     ImageHandler.SetMultiView();
@@ -446,15 +455,15 @@ namespace ScreenshotManager.Core
 
             // Settings menu buttons
 
-            ButtonGroup settingsMenuButtonGroup1 = new ButtonGroup("FileOrganization_Settings", adjustAlignment: true);
-            new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "File Organization", "FileOrganization_Header");
+            ButtonGroup settingsMenuButtonGroup1 = new ButtonGroup("File_Settings", adjustAlignment: true);
+            new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "File Settings", "FileSettings_Header");
 
-            ToggleButton fileOrganizationButton = new ToggleButton(new Action<bool>(state => Configuration.FileOrganizationEntry.Value = state), Sprites["Organization"], Sprites["X"], "File Organization", "File Organization", "Disable File Organization", "Enable File Organization", "Button_FileOrganization", Configuration.FileOrganizationEntry.Value);
-            Configuration.FileOrganizationEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => fileOrganizationButton.State = newValue);
+            ToggleButton fileOrganizationButton = new ToggleButton(new Action<bool>(state => Configuration.FileOrganization.Value = state), Sprites["Organization"], Sprites["X"], "File Organization", "File Organization", "Disable File Organization", "Enable File Organization", "Button_FileOrganization", Configuration.FileOrganization.Value);
+            Configuration.FileOrganization.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => fileOrganizationButton.State = newValue);
 
             SingleButton manuallyOrganizeButton = new SingleButton(new Action(() =>
             {
-                if (Configuration.FileOrganizationEntry.Value)
+                if (Configuration.FileOrganization.Value)
                     FileOrganization.OrganizeAll();
                 else
                     UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null);
@@ -462,36 +471,42 @@ namespace ScreenshotManager.Core
 
             SingleButton resetOrganizationButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset()), new Action(() => { }))), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
 
+            ToggleButton writeMetadataButton = new ToggleButton(new Action<bool>(state => Configuration.WriteImageMetadata.Value = state), Sprites["Data"], Sprites["X"], "World Metadata", "World Metadata", "Disable saving of world metadata to images", "Enable saving of world metadata to images", "Button_Metadata", Configuration.WriteImageMetadata.Value);
+
             settingsMenuButtonGroup1.AddButton(fileOrganizationButton);
             settingsMenuButtonGroup1.AddButton(manuallyOrganizeButton);
             settingsMenuButtonGroup1.AddButton(resetOrganizationButton);
+            settingsMenuButtonGroup1.AddButton(writeMetadataButton);
             settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup1);
 
             ButtonGroup settingsMenuButtonGroup2 = new ButtonGroup("Main_Settings", adjustAlignment: true);
             new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Settings", "Settings_Header");
 
-            ToggleButton buttonTypeButton = new ToggleButton(new Action<bool>(state => Configuration.TabButtonEntry.Value = state), Sprites["Tab"], Sprites["X"], "Tab Button", "Menu Button", "Switch to Camera Menu Button", "Switch to Tab Button", "Button_MenuType", Configuration.FileOrganizationEntry.Value);
-            Configuration.TabButtonEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            ToggleButton buttonTypeButton = new ToggleButton(new Action<bool>(state => Configuration.TabButton.Value = state), Sprites["Tab"], Sprites["X"], "Tab Button", "Menu Button", "Switch to Camera Menu Button", "Switch to Tab Button", "Button_MenuType", Configuration.FileOrganization.Value);
+            Configuration.TabButton.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 buttonTypeButton.State = newValue;
                 TabButton.GameObject.SetActive(newValue);
                 menuButton.GameObject.SetActive(!newValue);
             });
 
-            ToggleButton webhookStateButton = new ToggleButton(new Action<bool>(state => Configuration.DiscordWebhookEntry.Value = state), Sprites["Share"], Sprites["X"], "Discord Webhook", "Discord Webhook", "Disable Discord Webhook", "Enable Discord Webhook", "Button_WebhookState", Configuration.DiscordWebhookEntry.Value);
-            Configuration.DiscordWebhookEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => webhookStateButton.State = newValue);
+            ToggleButton webhookStateButton = new ToggleButton(new Action<bool>(state => Configuration.DiscordWebhook.Value = state), Sprites["Share"], Sprites["X"], "Discord Webhook", "Discord Webhook", "Disable Discord Webhook", "Enable Discord Webhook", "Button_WebhookState", Configuration.DiscordWebhook.Value);
+            Configuration.DiscordWebhook.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => webhookStateButton.State = newValue);
 
-            ToggleButton showRotationControlButton = new ToggleButton(new Action<bool>(state => Configuration.ShowRotationButtonsEntry.Value = state), Sprites["RotateRight"], Sprites["X"], "Rotation Buttons", "Rotation Buttons", "Hide rotation buttons", "Show rotation buttons", "Button_RotationButtonsState", Configuration.ShowRotationButtonsEntry.Value);
-            Configuration.ShowRotationButtonsEntry.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
+            ToggleButton showRotationControlButton = new ToggleButton(new Action<bool>(state => Configuration.ShowRotationButtons.Value = state), Sprites["RotateRight"], Sprites["X"], "Rotation Buttons", "Rotation Buttons", "Hide rotation buttons", "Show rotation buttons", "Button_RotationButtonsState", Configuration.ShowRotationButtons.Value);
+            Configuration.ShowRotationButtons.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
                 showRotationControlButton.State = newValue;
-                controlLeftRotateButton.gameObject.SetActive(!Configuration.MultiViewEntry.Value && newValue);
-                controlRightRotateButton.gameObject.SetActive(!Configuration.MultiViewEntry.Value && newValue);
+                controlLeftRotateButton.gameObject.SetActive(!Configuration.MultiView.Value && newValue);
+                controlRightRotateButton.gameObject.SetActive(!Configuration.MultiView.Value && newValue);
             });
+
+            ToggleButton autoSwitchToLatest = new ToggleButton(new Action<bool>(state => Configuration.AutoSelectLatest.Value = state), Sprites["Gallery"], Sprites["X"], "Auto Select Latest", "Auto Select Latest", "Disable automatic selection of the latest picture on menu open", "Enable automatic selection of the latest picture on menu open", "Button_Metadata", Configuration.AutoSelectLatest.Value);
 
             settingsMenuButtonGroup2.AddButton(buttonTypeButton);
             settingsMenuButtonGroup2.AddButton(webhookStateButton);
             settingsMenuButtonGroup2.AddButton(showRotationControlButton);
+            settingsMenuButtonGroup2.AddButton(autoSwitchToLatest);
             settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup2);
 
             ButtonGroup settingsMenuButtonGroup3 = new ButtonGroup("Settings_Actions", adjustAlignment: true);
@@ -531,7 +546,7 @@ namespace ScreenshotManager.Core
             EnableDisableListener menuListener = TabButton.SubMenu.GameObject.AddComponent<EnableDisableListener>();
             menuListener.OnDisableEvent += new Action(() =>
             {
-                controlLeft.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                controlLeft.localScale = new Vector3(0.5f, 0.5f, 1);
                 leftControlRect.anchoredPosition = new Vector3(-1024, 0, 0);
                 leftControlAnimator.ResetTrigger("Normal");
                 leftControlAnimator.ResetTrigger("Highlighted");
@@ -539,7 +554,7 @@ namespace ScreenshotManager.Core
                 leftControlAnimator.ResetTrigger("Selected");
                 leftControlAnimator.ResetTrigger("Disabled");
 
-                controlRight.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+                controlRight.localScale = new Vector3(0.5f, 0.5f, 1);
                 rightControlRect.anchoredPosition = new Vector3(1024, 0, 0);
                 rightControlAnimator.ResetTrigger("Normal");
                 rightControlAnimator.ResetTrigger("Highlighted");
@@ -570,7 +585,7 @@ namespace ScreenshotManager.Core
                 buttonGroup.ButtonLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
                 WideButton button = new WideButton(new Action(() =>
                 {
-                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://media.guilded.gg/webhook/"))
+                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://media.guilded.gg/webhooks/"))
                     {
                         ImageHandler.SendToDiscordWebhook(webhookConfig.Key, webhookConfig.Value,
                             new Action(() => UiManager.PushQuickMenuAlert("Webhook - Uploading image...")),

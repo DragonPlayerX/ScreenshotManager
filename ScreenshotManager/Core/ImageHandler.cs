@@ -53,7 +53,7 @@ namespace ScreenshotManager.Core
             { ImageMenuCategory.Favorites, 0 }
         };
 
-        private static readonly string[] Extensions = new string[] { ".png", ".jpeg" };
+        public static readonly string[] Extensions = new string[] { ".png", ".jpeg" };
 
         public static string TitleText
         {
@@ -81,7 +81,7 @@ namespace ScreenshotManager.Core
 
         public static void Init()
         {
-            CurrentCategory = (ImageMenuCategory)Configuration.LastCategoryEntry.Value;
+            CurrentCategory = (ImageMenuCategory)Configuration.LastCategory.Value;
 
             singleImageWrapper = new ImageWrapper(MenuManager.SingleImageContainer.transform.Find("SingleImage_Mask/Image").gameObject);
             secondarySingleImageWrapper = new ImageWrapper(MenuManager.SecondaryImageContainer.transform.Find("SingleImage_Mask/Image").gameObject);
@@ -122,41 +122,9 @@ namespace ScreenshotManager.Core
 
             System.Drawing.Image image = System.Drawing.Image.FromFile(selectedFile.FullName);
 
-            MenuManager.ImageCreationTimeText.text = Configuration.UseFileCreationTimeEntry.Value ? selectedFile.CreationTime.ToString("HH:mm:ss dd.MM.yyyy") : selectedFile.LastWriteTime.ToString("HH:mm:ss dd.MM.yyyy");
+            MenuManager.ImageCreationTimeText.text = Configuration.UseFileCreationTime.Value ? selectedFile.CreationTime.ToString("HH:mm:ss dd.MM.yyyy") : selectedFile.LastWriteTime.ToString("HH:mm:ss dd.MM.yyyy");
             MenuManager.ImageSizeText.text = image.Width + "x" + image.Height + " - " + (selectedFile.Length / 1024f / 1024f).ToString("0.00") + " MB";
-
-            string data = null;
-            if (selectedFile.Extension.Equals(Extensions[0]))
-            {
-                image.Dispose();
-                data = FileDataHandler.ReadPngChunk(selectedFile.FullName);
-            }
-            else if (selectedFile.Extension.Equals(Extensions[1]))
-            {
-                data = FileDataHandler.ReadJpegProperty(image);
-                image.Dispose();
-            }
-
-            if (data != null)
-            {
-                string[] dataArray = data.Split(',');
-                if (dataArray.Length >= 3)
-                {
-                    string world = dataArray.Skip(3).First();
-                    if (world.Contains("|"))
-                        world = world.Substring(0, world.IndexOf("|"));
-                    MenuManager.ImageWorldNameText.text = world;
-                }
-                else
-                {
-                    MenuManager.ImageWorldNameText.text = "Invalid tag";
-                }
-            }
-            else
-            {
-                MenuManager.ImageWorldNameText.text = "Not found";
-            }
-
+            MenuManager.ImageWorldNameText.text = GetWorldTag(selectedFile, image);
             return true;
         }
 
@@ -164,8 +132,8 @@ namespace ScreenshotManager.Core
         {
             if (IsReloading)
                 return;
-            if (currentIndex + (Configuration.MultiViewEntry.Value ? 9 : 1) < fileChache.Count)
-                currentIndex += (Configuration.MultiViewEntry.Value ? 9 : 1);
+            if (currentIndex + (Configuration.MultiView.Value ? 9 : 1) < fileChache.Count)
+                currentIndex += (Configuration.MultiView.Value ? 9 : 1);
             else
                 currentIndex = 0;
             Update(true);
@@ -175,11 +143,11 @@ namespace ScreenshotManager.Core
         {
             if (IsReloading)
                 return;
-            if (currentIndex - (Configuration.MultiViewEntry.Value ? 9 : 1) >= 0)
-                currentIndex -= (Configuration.MultiViewEntry.Value ? 9 : 1);
+            if (currentIndex - (Configuration.MultiView.Value ? 9 : 1) >= 0)
+                currentIndex -= (Configuration.MultiView.Value ? 9 : 1);
             else
             {
-                currentIndex = Configuration.MultiViewEntry.Value ? ((fileChache.Count - 1) / 9) * 9 : fileChache.Count - 1;
+                currentIndex = Configuration.MultiView.Value ? ((fileChache.Count - 1) / 9) * 9 : fileChache.Count - 1;
                 if (currentIndex < 0)
                     currentIndex = 0;
             }
@@ -188,13 +156,22 @@ namespace ScreenshotManager.Core
 
         public static void SetMultiView()
         {
+            if (IsReloading)
+                return;
+
             currentIndex = (currentIndex / 9) * 9;
+            Update(true);
+        }
+
+        public static void SelectLatest()
+        {
+            currentIndex = fileChache.Count - 1;
             Update(true);
         }
 
         public static void Update(bool fetchImages)
         {
-            if (Configuration.MultiViewEntry.Value)
+            if (Configuration.MultiView.Value)
                 InfoText = (currentIndex / 9 + 1) + "/" + ((fileChache.Count - 1) / 9 + 1);
             else
                 InfoText = (currentIndex + 1) + "/" + fileChache.Count;
@@ -209,7 +186,7 @@ namespace ScreenshotManager.Core
 
         public static void FetchCurrentImages()
         {
-            if (Configuration.MultiViewEntry.Value)
+            if (Configuration.MultiView.Value)
             {
                 for (int i = currentIndex; i < currentIndex + 9; i++)
                 {
@@ -294,7 +271,7 @@ namespace ScreenshotManager.Core
 
             CurrentCategory = category;
 
-            Configuration.LastCategoryEntry.Value = Array.IndexOf(Enum.GetValues(typeof(ImageMenuCategory)), CurrentCategory);
+            Configuration.LastCategory.Value = Array.IndexOf(Enum.GetValues(typeof(ImageMenuCategory)), CurrentCategory);
 
             TitleText = Titles[CurrentCategory];
             currentIndex = IndexCache[CurrentCategory];
@@ -332,26 +309,26 @@ namespace ScreenshotManager.Core
 
                 if (selectedFile.Directory.Name.Equals("Favorites"))
                 {
-                    if (Configuration.FileOrganizationEntry.Value)
+                    if (Configuration.FileOrganization.Value)
                     {
                         DateTime creationTime = selectedFile.LastWriteTime;
-                        string directory = Configuration.ScreenshotDirectoryEntry.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolderEntry.Value);
+                        string directory = Configuration.ScreenshotDirectory.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolder.Value);
                         if (!Directory.Exists(directory))
                             Directory.CreateDirectory(directory);
-                        path = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFileEntry.Value) + selectedFile.Extension;
+                        path = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFile.Value) + selectedFile.Extension;
                     }
                     else
                     {
-                        path = Configuration.ScreenshotDirectoryEntry.Value + "/" + selectedFile.Name;
+                        path = Configuration.ScreenshotDirectory.Value + "/" + selectedFile.Name;
                     }
                 }
                 else
                 {
-                    if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "/Favorites"))
+                    if (!Directory.Exists(Configuration.ScreenshotDirectory.Value + "/Favorites"))
                     {
-                        Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "/Favorites");
+                        Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value + "/Favorites");
                     }
-                    path = Configuration.ScreenshotDirectoryEntry.Value + "/Favorites/" + selectedFile.Name;
+                    path = Configuration.ScreenshotDirectory.Value + "/Favorites/" + selectedFile.Name;
                 }
 
                 MenuManager.FavoriteButton.ButtonComponent.enabled = false;
@@ -388,12 +365,40 @@ namespace ScreenshotManager.Core
                     return;
                 }
                 DateTime lastWriteTime = fileInfo.LastWriteTime;
+
                 System.Drawing.Image image = System.Drawing.Image.FromFile(fileInfo.FullName);
+
+                string data = null;
+                if (selectedFile.Extension.Equals(Extensions[0]))
+                    data = FileDataHandler.ReadPngChunk(selectedFile.FullName);
+                else if (selectedFile.Extension.Equals(Extensions[1]))
+                    data = FileDataHandler.ReadJpegProperty(image);
+
                 if (direction == Direction.Right)
                     image.RotateFlip(System.Drawing.RotateFlipType.Rotate90FlipNone);
                 else
                     image.RotateFlip(System.Drawing.RotateFlipType.Rotate270FlipNone);
-                image.Save(fileInfo.FullName);
+
+                if (data != null)
+                {
+                    if (fileInfo.Extension.Equals(Extensions[0]))
+                    {
+                        image.Save(fileInfo.FullName, System.Drawing.Imaging.ImageFormat.Png);
+                        bool result = FileDataHandler.WritePngChunk(fileInfo.FullName, data);
+
+                        if (!result)
+                            MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
+                    }
+                    else if (fileInfo.Extension.Equals(Extensions[1]))
+                    {
+                        image.Save(fileInfo.FullName, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    }
+                }
+                else
+                {
+                    image.Save(fileInfo.FullName);
+                }
+
                 image.Dispose();
                 File.SetLastWriteTime(fileInfo.FullName, lastWriteTime);
                 Update(true);
@@ -440,16 +445,25 @@ namespace ScreenshotManager.Core
                 MelonLogger.Msg("Uploading " + selectedFile.Name + " to Discord [" + webhookName + "]...");
                 onUploading?.Invoke();
 
-                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? selectedFile.CreationTime : selectedFile.LastWriteTime;
+                DateTime creationTime = Configuration.UseFileCreationTime.Value ? selectedFile.CreationTime : selectedFile.LastWriteTime;
 
                 string username = webhookConfig.SetUsername.Value ? (webhookConfig.Username.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : null;
 
                 string message = null;
                 if (webhookConfig.SetMessage.Value)
                 {
-                    message = (webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName).Replace("{creationtime}", creationTime.ToString(webhookConfig.CreationTimeFormat.Value)));
-                    if (message.Contains("{timestamp:"))
+                    string world = GetWorldTag(selectedFile, System.Drawing.Image.FromFile(selectedFile.FullName), true);
+                    message = webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)
+                        .Replace("{creationtime}", creationTime.ToString(webhookConfig.CreationTimeFormat.Value))
+                        .Replace("{world}", world ?? "<No World Tag>");
+
+                    int iterations = 0;
+                    while (message.Contains("{timestamp:"))
                     {
+                        iterations++;
+                        if (iterations > 32)
+                            break;
+
                         int startIndex = message.IndexOf("{timestamp:");
                         int typeIndex = startIndex + 11;
                         int endIndex = message.IndexOf("}", startIndex) + 1;
@@ -470,9 +484,8 @@ namespace ScreenshotManager.Core
                     + webhookConfig.SetMessage.Value.ToString() + "\" \""
                     + message + "\" \""
                     + selectedFile.FullName + "\" \""
-                    + selectedFile.Name + "\"";
-                processStartInfo.UseShellExecute = false;
-                processStartInfo.RedirectStandardError = true;
+                    + selectedFile.Name + "\" "
+                    + webhookConfig.CompressionThreshold.Value;
 
                 AsyncProcessProvider.StartProcess(processStartInfo, new Action<bool, int>((hasExited, exitCode) =>
                 {
@@ -501,34 +514,7 @@ namespace ScreenshotManager.Core
                 }
 
                 System.Drawing.Image image = System.Drawing.Image.FromFile(selectedFile.FullName);
-
-                string data = null;
-                if (selectedFile.Extension.Equals(Extensions[0]))
-                {
-                    image.Dispose();
-                    data = FileDataHandler.ReadPngChunk(selectedFile.FullName);
-                }
-                else if (selectedFile.Extension.Equals(Extensions[1]))
-                {
-                    data = FileDataHandler.ReadJpegProperty(image);
-                    image.Dispose();
-                }
-
-                string worldName = null;
-
-                if (data != null)
-                {
-                    string[] dataArray = data.Split(',');
-                    if (dataArray.Length >= 3)
-                    {
-                        string world = dataArray.Skip(3).First();
-                        if (world.Contains("|"))
-                            world = world.Substring(0, world.IndexOf("|"));
-                        worldName = world;
-                    }
-                }
-
-                return SteamIntegration.ImportScreenshot(selectedFile.FullName, worldName);
+                return SteamIntegration.ImportScreenshot(selectedFile.FullName, GetWorldTag(selectedFile, image, true));
             }
             return false;
         }
@@ -548,6 +534,43 @@ namespace ScreenshotManager.Core
             }
         }
 
+        public static string GetWorldTag(FileInfo fileInfo, System.Drawing.Image image, bool defaultNull = false)
+        {
+            string data = null;
+            if (fileInfo.Extension.Equals(Extensions[0]))
+            {
+                image.Dispose();
+                data = FileDataHandler.ReadPngChunk(fileInfo.FullName);
+            }
+            else if (fileInfo.Extension.Equals(Extensions[1]))
+            {
+                data = FileDataHandler.ReadJpegProperty(image);
+                image.Dispose();
+            }
+
+            if (data != null)
+            {
+                string[] dataArray = data.Split(',');
+                if (dataArray.Length >= 3)
+                {
+                    string world = dataArray.Skip(3).First();
+                    if (world.Contains("|"))
+                        world = world.Substring(0, world.IndexOf("|"));
+                    data = world;
+                }
+                else
+                {
+                    data = defaultNull ? null : "Invalid tag";
+                }
+            }
+            else
+            {
+                data = defaultNull ? null : "Not found";
+            }
+
+            return data;
+        }
+
         public static async Task ReloadFiles()
         {
             if (IsReloading)
@@ -560,27 +583,27 @@ namespace ScreenshotManager.Core
 
             if (CurrentCategory == ImageMenuCategory.Today)
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value);
-                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime) >= dateTime).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToList();
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value);
+                DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffset.Value);
+                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime) >= dateTime).OrderBy(f => (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime)).ToList();
             }
             else if (CurrentCategory == ImageMenuCategory.Yesterday)
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffsetEntry.Value).AddDays(-1);
-                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime) >= dateTime).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToList();
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value);
+                DateTime dateTime = DateTime.Now.Date.AddHours(Configuration.TodayHourOffset.Value).AddDays(-1);
+                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites") && (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime) >= dateTime).OrderBy(f => (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime)).ToList();
             }
             else if (CurrentCategory == ImageMenuCategory.Favorites)
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                if (!Directory.Exists(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites"))
-                    Directory.CreateDirectory(Configuration.ScreenshotDirectoryEntry.Value + "\\Favorites");
-                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToList();
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value + "\\Favorites");
+                if (!Directory.Exists(Configuration.ScreenshotDirectory.Value + "\\Favorites"))
+                    Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value + "\\Favorites");
+                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith)).OrderBy(f => (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime)).ToList();
             }
             else
             {
-                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => (Configuration.UseFileCreationTimeEntry.Value ? f.CreationTime : f.LastWriteTime)).ToList();
+                DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value);
+                fileChache = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => Extensions.Any(f.Extension.EndsWith) && !f.Directory.Name.Equals("Favorites")).OrderBy(f => (Configuration.UseFileCreationTime.Value ? f.CreationTime : f.LastWriteTime)).ToList();
             }
 
             if (currentIndex >= fileChache.Count)

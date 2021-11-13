@@ -18,16 +18,16 @@ namespace ScreenshotManager.Core
         public static void OrganizeAll()
         {
             MelonLogger.Msg("Organizing files...");
-            DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
+            DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value);
             FileInfo[] files = directoryInfo.EnumerateFiles("*", SearchOption.TopDirectoryOnly).ToArray();
             int movedFiles = 0;
             foreach (FileInfo file in files)
             {
-                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? file.CreationTime : file.LastWriteTime;
-                string directory = Configuration.ScreenshotDirectoryEntry.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolderEntry.Value);
+                DateTime creationTime = Configuration.UseFileCreationTime.Value ? file.CreationTime : file.LastWriteTime;
+                string directory = Configuration.ScreenshotDirectory.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolder.Value);
                 if (!Directory.Exists(directory))
                     Directory.CreateDirectory(directory);
-                string newFile = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFileEntry.Value) + file.Extension;
+                string newFile = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFile.Value) + file.Extension;
                 if (!File.Exists(newFile))
                 {
                     File.Move(file.FullName, newFile);
@@ -41,13 +41,13 @@ namespace ScreenshotManager.Core
         public static void Reset()
         {
             MelonLogger.Msg("Reset organization...");
-            DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectoryEntry.Value);
-            FileInfo[] files = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => !f.Directory.Name.Equals("Favorites") && !Configuration.ScreenshotDirectoryEntry.Value.EndsWith(f.Directory.Name)).ToArray();
+            DirectoryInfo directoryInfo = new DirectoryInfo(Configuration.ScreenshotDirectory.Value);
+            FileInfo[] files = directoryInfo.EnumerateFiles("*", SearchOption.AllDirectories).Where(f => !f.Directory.Name.Equals("Favorites") && !Configuration.ScreenshotDirectory.Value.EndsWith(f.Directory.Name)).ToArray();
             int movedFiles = 0;
             foreach (FileInfo file in files)
             {
-                DateTime creationTime = Configuration.UseFileCreationTimeEntry.Value ? file.CreationTime : file.LastWriteTime;
-                string newFile = Configuration.ScreenshotDirectoryEntry.Value + "/VRChat_" + creationTime.ToString("yyyy-MM-dd_HH-mm-ss.fff") + file.Extension;
+                DateTime creationTime = Configuration.UseFileCreationTime.Value ? file.CreationTime : file.LastWriteTime;
+                string newFile = Configuration.ScreenshotDirectory.Value + "/VRChat_" + creationTime.ToString("yyyy-MM-dd_HH-mm-ss.fff") + file.Extension;
                 if (!File.Exists(newFile))
                 {
                     File.Move(file.FullName, newFile);
@@ -80,10 +80,10 @@ namespace ScreenshotManager.Core
 
         private static bool DirectoryPatch(ref string __result)
         {
-            if (Configuration.FileOrganizationEntry.Value)
-                __result = Configuration.ScreenshotDirectoryEntry.Value + "/" + DateTime.Now.ToString(Configuration.FileOrganizationFolderEntry.Value) + "/VRChat_" + DateTime.Now.ToString(Configuration.FileOrganizationFileEntry.Value) + ".png";
+            if (Configuration.FileOrganization.Value)
+                __result = Configuration.ScreenshotDirectory.Value + "/" + DateTime.Now.ToString(Configuration.FileOrganizationFolder.Value) + "/VRChat_" + DateTime.Now.ToString(Configuration.FileOrganizationFile.Value) + ".png";
             else
-                __result = Configuration.ScreenshotDirectoryEntry.Value + "/VRChat_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".png";
+                __result = Configuration.ScreenshotDirectory.Value + "/VRChat_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".png";
             return false;
         }
     }

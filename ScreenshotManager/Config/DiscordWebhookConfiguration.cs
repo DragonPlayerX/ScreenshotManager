@@ -15,6 +15,7 @@ namespace ScreenshotManager.Config
         public Entry<bool> SetMessage;
         public Entry<string> Message;
         public Entry<string> CreationTimeFormat;
+        public Entry<int> CompressionThreshold;
 
         public DiscordWebhookConfiguration(string file)
         {
@@ -26,12 +27,13 @@ namespace ScreenshotManager.Config
             try
             {
                 string[] lines = File.ReadAllLines(file);
-                WebhookURL = new Entry<string>("WebhookURL", lines);
-                SetUsername = new Entry<bool>("SetUsername", lines);
-                Username = new Entry<string>("Username", lines);
-                SetMessage = new Entry<bool>("SetMessage", lines);
-                Message = new Entry<string>("Message", lines);
-                CreationTimeFormat = new Entry<string>("CreationTimeFormat", lines);
+                WebhookURL = new Entry<string>("WebhookURL", "https://discord.com/...").Read(lines);
+                SetUsername = new Entry<bool>("SetUsername", true).Read(lines);
+                Username = new Entry<string>("Username", "{vrcname}").Read(lines);
+                SetMessage = new Entry<bool>("SetMessage", true).Read(lines);
+                Message = new Entry<string>("Message", "New screenshot by {vrcname} in world {world} taken at {creationtime} {timestamp:R}").Read(lines);
+                CreationTimeFormat = new Entry<string>("CreationTimeFormat", "dd.MM.yyyy HH:mm:ss").Read(lines);
+                CompressionThreshold = new Entry<int>("CompressionThreshold", -1).Read(lines);
             }
             catch (Exception e)
             {
@@ -43,13 +45,18 @@ namespace ScreenshotManager.Config
 
         public class Entry<T>
         {
-
             public string Name;
             public T Value;
+            public T DefaultValue;
 
-            public Entry(string name, string[] lines)
+            public Entry(string name, T defaultValue)
             {
                 Name = name;
+                DefaultValue = defaultValue;
+            }
+
+            public Entry<T> Read(string[] lines)
+            {
                 foreach (string line in lines)
                 {
                     if (line.Contains("="))
@@ -58,18 +65,20 @@ namespace ScreenshotManager.Config
                         if (content.Length == 2 && content[0].Trim().Equals(Name))
                         {
                             Value = (T)Convert.ChangeType(content[1].Trim(), typeof(T));
-                            return;
+                            return this;
                         }
                         else
                         {
-                            Value = default;
+                            Value = DefaultValue;
                         }
                     }
                     else
                     {
-                        Value = default;
+                        Value = DefaultValue;
                     }
                 }
+
+                return this;
             }
         }
     }
