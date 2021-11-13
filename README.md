@@ -106,7 +106,8 @@ ScreenshotManager supports two ways to sort and handle your images. The first (a
 ## Credits
 
 - I used very much code of [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods/tree/main/VRChatUtilityKit) by [loukylor](https://github.com/loukylor) to implement the needed features directly to this mod
-- I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) as reference for my own implementation.
+- I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) by [knah](https://github.com/knah) as reference for my own implementation.
+- I used two methods related to PNG CRC from [LagFreeScreenshots](https://github.com/knah/VRCMods/blob/master/LagFreeScreenshots) by [knah](https://github.com/knah)
 - As mentioned before, i used [PhotoOrganization](https://github.com/dave-kun/PhotoOrganization) as my reference for the File Organization
 
 ### Credits for all Icon Authors
@@ -117,5 +118,6 @@ ScreenshotManager supports two ways to sort and handle your images. The first (a
 - https://www.flaticon.com/authors/becris
 - https://www.flaticon.com/authors/pixel-perfect
 - https://www.flaticon.com/authors/aldo-cervantes
-- https://www.flaticon.com/authors/stockio
 - https://www.flaticon.com/authors/dave-gandy
+- https://www.flaticon.com/authors/ilham-fitrotul-hayat
+- https://www.flaticon.com/authors/bamicon
