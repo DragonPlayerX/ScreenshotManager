@@ -2,10 +2,7 @@
 
 ## Known Issues
 
-- Rotating an image will delete the Metadata
 - Automatic image loading is **not** compatible with LagFreeScreenshots
-- Guilded webhooks will work with next release
-- Only one Discord Timestamp will work currently
 
 *Will be fixed soon*
 
@@ -28,6 +25,8 @@
     - Upload picture to VRC+ Gallery
     - Import picture directly to Steam
     - Reading world metadata from [LagFreeScreenshots](https://github.com/knah/VRCMods/tree/master/LagFreeScreenshots)
+    - Generating own world metadata without LagFreeScreenshots
+    - Optional automatic compression on webhook uploads
 - File Organization:
     - Change the location where VRChat Screenshots are saved.
     - Automatic sorting of new screenshots by placing them in subfolders named by the current day
@@ -80,9 +79,17 @@ Available tags for username and message of the webhook:
 
 - Message:
     - {vrcname} = VRChat name
+    - {world} = World name the image is taken in (requires the built-in metadata saving or metadata from LagFreeScreenshots to be enabled)
     - {creationtime} = Image creation time formatted with the "CreationTimeFormat" value of the webhook file
     - {timestamp:\<value\>} = Embed the Discord Timestamp support
 
+### How does the compression works?
+
+The Webhook config file contains an property called "CompressionThreshold" (default value is -1). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
+
+You only have to set the compression threshold to the upload limit (in megabyte) of your Discord Webhook (Normal Server: 8 MB, Level 2 Boost: 50 MB, Level 3 Boost: 100MB). Setting the value to -1 will result in disabling the compression.
+
+The image compression will only work for **PNG** images because it converts these to **JPEG** images which are less quality but also less file size.
 
 ### How to use Discord Timestamps
 
