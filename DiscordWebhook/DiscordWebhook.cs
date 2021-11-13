@@ -23,8 +23,8 @@ namespace DiscordWebhook
 
                 byte[] fileBytes = File.ReadAllBytes(args[5]);
 
-                int compressionTreshhold = int.Parse(args[7], CultureInfo.InvariantCulture);
-                if (compressionTreshhold != -1 && fileBytes.Length > compressionTreshhold * 1024 * 1024)
+                int compressionThreshold = int.Parse(args[7], CultureInfo.InvariantCulture);
+                if (compressionThreshold != -1 && fileBytes.Length > compressionThreshold * 1024 * 1024)
                 {
                     int oldLength = fileBytes.Length;
 
