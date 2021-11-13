@@ -87,7 +87,7 @@ Available tags for username and message of the webhook:
 
 The Webhook config file contains an property called "CompressionThreshold" (default value is -1). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
 
-You only have to set the compression threshold to the upload limit (in megabyte) of your Discord Webhook (Normal Server: 8 MB, Level 2 Boost: 50 MB, Level 3 Boost: 100MB). Setting the value to -1 will result in disabling the compression.
+You only have to set the compression threshold to the upload limit (in megabyte) of your Discord Webhook (Normal Server: 8 MB, Level 2 Boost: 50 MB, Level 3 Boost: 100 MB). Setting the value to -1 will result in disabling the compression.
 
 The image compression will only work for **PNG** images because it converts these to **JPEG** images which are less quality but also less file size.
 
