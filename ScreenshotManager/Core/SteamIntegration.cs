@@ -29,7 +29,7 @@ namespace ScreenshotManager.Core
                 if (pipe == 0 || user == 0)
                 {
                     Enabled = false;
-                    MelonLogger.Error("Steam API is invalid. The Steam integration is now disabled.");
+                    MelonLogger.Warning("Steam API is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
@@ -39,7 +39,7 @@ namespace ScreenshotManager.Core
                 if (clientPtr == IntPtr.Zero)
                 {
                     Enabled = false;
-                    MelonLogger.Error("Steam Client is invalid. The Steam integration is now disabled.");
+                    MelonLogger.Warning("Steam Client is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
@@ -49,7 +49,7 @@ namespace ScreenshotManager.Core
                 if (steamScreenshotsInterfacePtr == IntPtr.Zero)
                 {
                     Enabled = false;
-                    MelonLogger.Error("Screenshot Interface is invalid. The Steam integration is now disabled.");
+                    MelonLogger.Warning("Screenshot Interface is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
