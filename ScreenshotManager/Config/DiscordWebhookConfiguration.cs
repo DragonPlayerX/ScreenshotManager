@@ -31,7 +31,7 @@ namespace ScreenshotManager.Config
                 SetUsername = new Entry<bool>("SetUsername", true).Read(lines);
                 Username = new Entry<string>("Username", "{vrcname}").Read(lines);
                 SetMessage = new Entry<bool>("SetMessage", true).Read(lines);
-                Message = new Entry<string>("Message", "New screenshot by {vrcname} in world {world} taken at {creationtime} {timestamp:R}").Read(lines);
+                Message = new Entry<string>("Message", "New screenshot by {vrcname} taken at {world} {creationtime} {timestamp:R}").Read(lines);
                 CreationTimeFormat = new Entry<string>("CreationTimeFormat", "dd.MM.yyyy HH:mm:ss").Read(lines);
                 CompressionThreshold = new Entry<int>("CompressionThreshold", -1).Read(lines);
             }
