@@ -19,7 +19,7 @@ namespace ScreenshotManager.UI.Elements
             set => _image.sprite = value;
         }
 
-        public TabButton(Sprite icon, string pageTitle, string pageName, string gameObjectName) : base(null, UiManager.QMStateController.transform.Find("Container/Window/Page_Buttons_QM/HorizontalLayoutGroup"), UiManager.QMStateController.transform.Find("Container/Window/Page_Buttons_QM/HorizontalLayoutGroup/Page_Dashboard").gameObject, gameObjectName)
+        public TabButton(Sprite icon, string pageTitle, string pageName, string tooltip, string gameObjectName) : base(null, UiManager.QMStateController.transform.Find("Container/Window/Page_Buttons_QM/HorizontalLayoutGroup"), UiManager.QMStateController.transform.Find("Container/Window/Page_Buttons_QM/HorizontalLayoutGroup/Page_Dashboard").gameObject, gameObjectName)
         {
             MenuTab = GameObject.GetComponent<MenuTab>();
             MenuTab.field_Private_MenuStateController_0 = UiManager.QMStateController;
@@ -27,6 +27,8 @@ namespace ScreenshotManager.UI.Elements
 
             _image = RectTransform.Find("Icon").GetComponent<Image>();
             _image.sprite = icon;
+
+            TooltipText = tooltip;
 
             SubMenu = new TabMenu(pageName, "Menu_" + pageName, pageTitle);
         }
