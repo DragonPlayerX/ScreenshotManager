@@ -28,9 +28,9 @@ namespace ScreenshotManager.UI
             quickMenuAlert = quickMenuObject.transform.Find("Container/Window/QMParent/Modal_Alert").GetComponent<ModalAlert>();
         }
 
-        public static void PushQuickMenuAlert(string text) => quickMenuAlert.Method_Public_Void_String_0(text);
+        public static void PushQuickMenuAlert(string text) => quickMenuAlert.Method_Public_Void_String_3(text);
 
-        public static void ShowQuickMenuInformationPopup(string title, string body, Action action) => QuickMenu.Method_Public_Void_String_String_Action_PDM_1(title, body, action);
+        public static void ShowQuickMenuInformationPopup(string title, string body, Action action) => QuickMenu.Method_Public_Void_String_String_Action_PDM_0(title, body, action);
 
         public static void ShowQuickMenuPopup(string title, string body, string yesLabel, string noLabel, Action yesAction, Action noAction) => QuickMenu.Method_Public_Void_String_String_String_String_Action_Action_0(title, body, yesLabel, noLabel, yesAction, noAction);
     }
