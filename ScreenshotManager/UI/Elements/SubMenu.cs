@@ -30,6 +30,7 @@ namespace ScreenshotManager.UI.Elements
             Object.Destroy(RectTransform.Find("Header_H1/RightItemContainer/Button_QM_Expand").gameObject);
 
             PageLayoutGroup = RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup").GetComponent<VerticalLayoutGroup>();
+            PageLayoutGroup.childControlHeight = false;
             for (int i = PageLayoutGroup.rectTransform.childCount - 1; i >= 0; i--)
                 Object.DestroyImmediate(PageLayoutGroup.transform.GetChild(i).gameObject);
 
