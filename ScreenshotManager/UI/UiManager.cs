@@ -1,9 +1,15 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using VRC.UI.Elements;
 using VRC.UI.Elements.Controls;
 
 using Object = UnityEngine.Object;
+using VRCQuickMenu = VRC.UI.Elements.QuickMenu;
+
+using ScreenshotManager.Utils;
+using ScreenshotManager.UI.Elements;
 
 namespace ScreenshotManager.UI
 {
@@ -11,10 +17,16 @@ namespace ScreenshotManager.UI
     {
         public static Transform TempUIParent;
 
-        public static VRC.UI.Elements.QuickMenu QuickMenu;
+        public static VRCQuickMenu QuickMenu;
         public static MenuStateController QMStateController { get; private set; }
 
         private static ModalAlert quickMenuAlert;
+
+        private static MethodInfo modalAlertMethod;
+        private static MethodInfo infoPopupMethod;
+        private static MethodInfo popupMethod;
+        private static MethodInfo openSubMenuMethod;
+        private static MethodInfo popSubMenuMethod;
 
         public static void UiInit()
         {
@@ -23,15 +35,25 @@ namespace ScreenshotManager.UI
 
             GameObject quickMenuObject = GameObject.Find("UserInterface").transform.Find("Canvas_QuickMenu(Clone)").gameObject;
             QMStateController = quickMenuObject.GetComponent<MenuStateController>();
-            QuickMenu = quickMenuObject.GetComponent<VRC.UI.Elements.QuickMenu>();
+            QuickMenu = quickMenuObject.GetComponent<VRCQuickMenu>();
 
             quickMenuAlert = quickMenuObject.transform.Find("Container/Window/QMParent/Modal_Alert").GetComponent<ModalAlert>();
+
+            modalAlertMethod = typeof(ModalAlert).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_") && method.GetParameters().Length == 1 && typeof(MenuTabGroup).GetMethods().Any(m => XrefUtils.CheckUsedBy(method, m.Name, m.DeclaringType)));
+            infoPopupMethod = typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_Action_") && method.GetParameters().Length == 3);
+            popupMethod = typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_String_String_Action_Action_") && method.GetParameters().Length == 6 && typeof(UIMenu).GetMethods().Any(m => XrefUtils.CheckUsedBy(method, m.Name, m.DeclaringType)));
+            openSubMenuMethod = typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_") && method.GetParameters().Length == 1 && typeof(MenuStateController).GetMethods().Any(m => XrefUtils.CheckUsedBy(method, "Method_Public_Void_String_UIContext_Boolean_", m.DeclaringType)));
+            popSubMenuMethod = typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_PDM_") && method.GetParameters().Length == 0 && typeof(MenuStateController).GetMethods().Any(m => XrefUtils.CheckUsedBy(method, m.Name, m.DeclaringType)));
         }
 
-        public static void PushQuickMenuAlert(string text) => quickMenuAlert.Method_Public_Void_String_3(text);
+        public static void PushQuickMenuAlert(string text) => modalAlertMethod?.Invoke(quickMenuAlert, new object[] { text });
 
-        public static void ShowQuickMenuInformationPopup(string title, string body, Action action) => QuickMenu.Method_Public_Void_String_String_Action_PDM_0(title, body, action);
+        public static void ShowQuickMenuInformationPopup(string title, string body, Action action) => infoPopupMethod?.Invoke(QuickMenu, new object[] { title, body, (Il2CppSystem.Action)action });
 
-        public static void ShowQuickMenuPopup(string title, string body, string yesLabel, string noLabel, Action yesAction, Action noAction) => QuickMenu.Method_Public_Void_String_String_String_String_Action_Action_0(title, body, yesLabel, noLabel, yesAction, noAction);
+        public static void ShowQuickMenuPopup(string title, string body, string yesLabel, string noLabel, Action yesAction, Action noAction) => popupMethod?.Invoke(QuickMenu, new object[] { title, body, yesLabel, noLabel, (Il2CppSystem.Action)yesAction, (Il2CppSystem.Action)noAction });
+
+        public static void OpenUIPageSubMenu(UIPage uiPage, SubMenu subMenu) => openSubMenuMethod?.Invoke(uiPage, new object[] { subMenu.UiPage });
+
+        public static void PopUIPageSubMenu(UIPage uiPage) => popSubMenuMethod?.Invoke(uiPage, null);
     }
 }
