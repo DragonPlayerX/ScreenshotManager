@@ -364,14 +364,15 @@ namespace ScreenshotManager.Core
                     MelonLogger.Error("File not found: " + fileInfo.FullName);
                     return;
                 }
+
                 DateTime lastWriteTime = fileInfo.LastWriteTime;
 
                 System.Drawing.Image image = System.Drawing.Image.FromFile(fileInfo.FullName);
 
                 string data = null;
-                if (selectedFile.Extension.Equals(Extensions[0]))
-                    data = FileDataHandler.ReadPngChunk(selectedFile.FullName);
-                else if (selectedFile.Extension.Equals(Extensions[1]))
+                if (fileInfo.Extension.Equals(Extensions[0]))
+                    data = FileDataHandler.ReadPngChunk(fileInfo.FullName);
+                else if (fileInfo.Extension.Equals(Extensions[1]))
                     data = FileDataHandler.ReadJpegProperty(image);
 
                 if (direction == Direction.Right)

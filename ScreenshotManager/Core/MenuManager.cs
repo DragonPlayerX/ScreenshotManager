@@ -187,9 +187,13 @@ namespace ScreenshotManager.Core
             Text imageWorldNameHeader = textContainer.Find("WorldName/Text_Header").GetComponent<Text>();
             ImageWorldNameText = textContainer.Find("WorldName/Text_Content").GetComponent<Text>();
 
-            GameObject tempObject1 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
-            GameObject tempObject2 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
-            GameObject tempObject3 = Object.Instantiate(new GameObject(), TabButton.SubMenu.RectTransform);
+            GameObject tempObject1 = new GameObject();
+            GameObject tempObject2 = new GameObject();
+            GameObject tempObject3 = new GameObject();
+
+            tempObject1.transform.parent = TabButton.SubMenu.RectTransform;
+            tempObject2.transform.parent = TabButton.SubMenu.RectTransform;
+            tempObject3.transform.parent = TabButton.SubMenu.RectTransform;
 
             TextMeshProUGUI text1 = tempObject1.AddComponent<TextMeshProUGUI>();
             TextMeshProUGUI text2 = tempObject2.AddComponent<TextMeshProUGUI>();

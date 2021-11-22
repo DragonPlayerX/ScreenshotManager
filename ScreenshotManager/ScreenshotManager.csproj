@@ -29,6 +29,9 @@
 		<Reference Include="Il2CppSystem">
 			<HintPath>..\Libs\Il2CppSystem.dll</HintPath>
 		</Reference>
+		<Reference Include="LagFreeScreenshots">
+		  <HintPath>..\Libs\LagFreeScreenshots.dll</HintPath>
+		</Reference>
 		<Reference Include="MelonLoader">
 			<HintPath>..\Libs\MelonLoader.dll</HintPath>
 		</Reference>

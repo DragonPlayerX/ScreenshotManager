@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using MelonLoader;
@@ -58,8 +59,15 @@ namespace ScreenshotManager.Core
             catch (Exception e)
             {
                 Enabled = false;
-                MelonLogger.Error(e);
-                MelonLogger.Error("An error occurred while loading Steam API. The Steam integration is now disabled.");
+                if (e is DllNotFoundException)
+                {
+                    MelonLogger.Warning("Steam API file not found. The Steam integration is now disabled.");
+                }
+                else
+                {
+                    MelonLogger.Error(e);
+                    MelonLogger.Error("An error occurred while loading Steam API. The Steam integration is now disabled.");
+                }
             }
         }
 
@@ -78,11 +86,16 @@ namespace ScreenshotManager.Core
                 string tempFile = Path.GetTempPath() + fileInfo.Name;
                 File.Copy(file, tempFile);
 
-                uint handle = SteamAPI_ISteamScreenshots_AddScreenshotToLibrary(steamScreenshotsInterfacePtr, tempFile, null, 1920, 1080);
-                MelonLogger.Msg("[Steam API] Screenshot Handle: " + handle);
+                Image image = Image.FromFile(file);
+
+                uint handle = SteamAPI_ISteamScreenshots_AddScreenshotToLibrary(steamScreenshotsInterfacePtr, tempFile, null, image.Width, image.Height);
+                MelonLogger.Msg("[Steam API] Screenshot Handle: " + handle + " Size: " + image.Width + "x" + image.Height);
+
+                image.Dispose();
+
                 if (location != null)
                     ISteamScreenshots_SetLocation(steamScreenshotsInterfacePtr, handle, location);
-                
+
                 if (taggedUsers != null)
                 {
                     if (taggedUsers.Count > 32)

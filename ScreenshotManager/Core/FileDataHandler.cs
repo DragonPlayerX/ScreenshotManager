@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.Serialization;
+using System.Runtime.CompilerServices;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -20,8 +22,6 @@ namespace ScreenshotManager.Core
 
         // First 8 bytes of a PNG are always theses values otherwise the signature or file is corrupted
         private static readonly byte[] PngSignature = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
-
-        public static bool UseLFS = false;
 
         // Method copied from https://github.com/knah/VRCMods/blob/master/LagFreeScreenshots/PngUtils.cs
         private static readonly uint[] ourCRCTable = Enumerable.Range(0, 256).Select(n =>
@@ -53,16 +53,34 @@ namespace ScreenshotManager.Core
 
         public static void Init()
         {
-            UseLFS = MelonHandler.Mods.Any(mod => mod.Info.Name.Equals("Lag Free Screenshots"));
+            Assembly lfsAssembly = null;
+            try
+            {
+                lfsAssembly = MelonHandler.Mods.First(mod => mod.Info.Name.Equals("Lag Free Screenshots")).Assembly;
+            }
+            catch (Exception) { }
 
-            if (!UseLFS)
+            if (lfsAssembly == null)
+            {
                 ScreenshotManagerMod.Instance.HarmonyInstance.Patch(typeof(ScreenshotFileHandler).GetMethod("_TakeScreenShot_b__1"), postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+            }
+            else
+            {
+                if (lfsAssembly.GetType("LagFreeScreenshots.EventHandler", false) != null)
+                    LFSIntegration.InitLFS();
+                else
+                    MelonLogger.Warning("Your version of LagFreeScreenshots does not support events.");
+            }
         }
 
         private static void DefaultVRCScreenshotResultPatch(ScreenshotFileHandler __instance)
         {
             ImageHandler.AddFile(new FileInfo(__instance.field_Public_String_0));
+            WriteMetadataAfterSave(__instance.field_Public_String_0);
+        }
 
+        private static void WriteMetadataAfterSave(string path)
+        {
             if (!Configuration.WriteImageMetadata.Value)
                 return;
 
@@ -73,9 +91,16 @@ namespace ScreenshotManager.Core
 
             string description = "screenshotmanager|0|author:" + username + "|" + world;
 
-            if (__instance.field_Public_String_0.ToLower().EndsWith(ImageHandler.Extensions[0]))
+            if (path.ToLower().EndsWith(ImageHandler.Extensions[0]))
             {
-                bool result = WritePngChunk(__instance.field_Public_String_0, description);
+                bool result = WritePngChunk(path, description);
+
+                if (!result)
+                    MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
+            }
+            else if (path.ToLower().EndsWith(ImageHandler.Extensions[1]))
+            {
+                bool result = WriteJpegProperty(path, description);
 
                 if (!result)
                     MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
@@ -206,6 +231,41 @@ namespace ScreenshotManager.Core
             }
         }
 
+        public static bool WriteJpegProperty(string file, string text)
+        {
+            try
+            {
+                Image oldImage = Image.FromFile(file);
+                Image image = new Bitmap(oldImage);
+
+                oldImage.Dispose();
+
+                int textByteCount = Encoding.Unicode.GetByteCount(text);
+                byte[] textBytes = new byte[8 + textByteCount];
+                Encoding.ASCII.GetBytes("UNICODE\0", 0, 8, textBytes, 0);
+                Encoding.Unicode.GetBytes(text, 0, text.Length, textBytes, 8);
+
+                PropertyItem property = FormatterServices.GetUninitializedObject(typeof(PropertyItem)) as PropertyItem;
+                property.Type = 7;
+                property.Id = 0x9286;
+                property.Value = textBytes;
+                property.Len = property.Value.Length;
+
+                image.SetPropertyItem(property);
+                image.Save(file, ImageFormat.Jpeg);
+
+                image.Dispose();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                MelonLogger.Error(e);
+                MelonLogger.Error("Error while writing jpeg properties");
+                return false;
+            }
+        }
+
         public static string ReadJpegProperty(Image image)
         {
             try
@@ -217,6 +277,21 @@ namespace ScreenshotManager.Core
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        internal class LFSIntegration
+        {
+            [MethodImpl(MethodImplOptions.NoInlining)]
+            public static void InitLFS()
+            {
+                LagFreeScreenshots.EventHandler.OnScreenshotSaved += new Action<string, int, int, LagFreeScreenshots.Metadata>((path, width, height, metadata) =>
+                {
+                    ImageHandler.AddFile(new FileInfo(path));
+
+                    if (metadata == null)
+                        WriteMetadataAfterSave(path);
+                });
             }
         }
     }
