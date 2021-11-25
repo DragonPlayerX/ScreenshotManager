@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading.Tasks;
 using System.Runtime.Serialization;
 using System.Runtime.CompilerServices;
 using System.IO;
@@ -14,6 +15,7 @@ using VRC.Core;
 using ScreenshotFileHandler = VRC.UserCamera.CameraUtil.ObjectNPrivateSealedStObUnique;
 
 using ScreenshotManager.Config;
+using ScreenshotManager.Tasks;
 
 namespace ScreenshotManager.Core
 {
@@ -91,20 +93,22 @@ namespace ScreenshotManager.Core
 
             string description = "screenshotmanager|0|author:" + username + "|" + world;
 
-            if (path.ToLower().EndsWith(ImageHandler.Extensions[0]))
+            Task.Run(async () =>
             {
-                bool result = WritePngChunk(path, description);
+                await TaskProvider.YieldToBackgroundTask();
+
+                bool result = false;
+
+                if (path.ToLower().EndsWith(ImageHandler.Extensions[0]))
+                    result = WritePngChunk(path, description);
+                else if (path.ToLower().EndsWith(ImageHandler.Extensions[1]))
+                    result = WriteJpegProperty(path, description);
+
+                await TaskProvider.YieldToMainThread();
 
                 if (!result)
                     MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
-            }
-            else if (path.ToLower().EndsWith(ImageHandler.Extensions[1]))
-            {
-                bool result = WriteJpegProperty(path, description);
-
-                if (!result)
-                    MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
-            }
+            }).NoAwait();
         }
 
         public static bool WritePngChunk(string file, string text)
