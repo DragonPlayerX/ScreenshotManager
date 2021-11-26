@@ -3,8 +3,7 @@
 ## Known Issues
 
 - Automatic image loading is **not** compatible with LagFreeScreenshots
-
-*Will be fixed soon*
+    - It will work if this gets published https://github.com/knah/VRCMods/pull/178
 
 ## Requirements
 
