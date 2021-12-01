@@ -1,7 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -17,7 +19,6 @@ using ScreenshotManager.UI.Components;
 using ScreenshotManager.Config;
 using ScreenshotManager.Tasks;
 using ScreenshotManager.Utils;
-using System.Threading.Tasks;
 
 namespace ScreenshotManager.Core
 {
@@ -124,6 +125,11 @@ namespace ScreenshotManager.Core
                     ImageHandler.SelectLatest();
             });
 
+            MainImageContainerRect.parent = TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport/VerticalLayoutGroup");
+            MainImageContainerRect.sizeDelta = new Vector2(1024, 1152 / 2);
+
+            // Editing existing menus
+
             SingleButton menuButton = new SingleButton(new Action(() => TabButton.MenuTab.ShowTabContent()), Sprites["Gallery"], "Screenshot Manager", "Open Screenshot Manager", "Button_ScreenshotManager");
             menuButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
             menuButton.GameObject.SetActive(!Configuration.TabButton.Value);
@@ -136,8 +142,12 @@ namespace ScreenshotManager.Core
                     ImageHandler.SelectLatest();
             });
 
-            MainImageContainerRect.parent = TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport/VerticalLayoutGroup");
-            MainImageContainerRect.sizeDelta = new Vector2(1024, 1152 / 2);
+            UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Panel_Info/Text_H4").GetComponent<TextMeshProUGUI>().text = "ScreenshotManager can sort and manage your photos (customizable)";
+            GameObject oldFolderButton = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons/Button_PhotosFolder").gameObject;
+            oldFolderButton.SetActive(false);
+
+            SingleButton openFolderButton = new SingleButton(new Action(() => Process.Start("explorer.exe", "\"" + Configuration.ScreenshotDirectory.Value + "\"")), oldFolderButton.transform.Find("Icon").GetComponent<Image>().sprite, "Open Photos Folder", "Open the folder where photos are saved", "Button_ScreenshotManager_PhotosFolder");
+            openFolderButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
 
             // Styles & Build-in stuff
 

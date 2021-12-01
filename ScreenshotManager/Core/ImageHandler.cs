@@ -350,7 +350,7 @@ namespace ScreenshotManager.Core
                     MelonLogger.Error("File not found: " + selectedFile.FullName);
                     return;
                 }
-                Process.Start("explorer.exe", "/select, \"" + selectedFile.FullName + "\""); ;
+                Process.Start("explorer.exe", "/select, \"" + selectedFile.FullName + "\"");
             }
         }
 

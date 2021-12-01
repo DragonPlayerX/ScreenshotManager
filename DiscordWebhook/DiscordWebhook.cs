@@ -2,7 +2,6 @@
 using System.IO;
 using System.Drawing;
 using System.Net.Http;
-using System.Threading.Tasks;
 using System.Globalization;
 
 namespace DiscordWebhook
@@ -41,20 +40,21 @@ namespace DiscordWebhook
 
                 data.Add(new ByteArrayContent(fileBytes, 0, fileBytes.Length), "Picture", args[6]);
 
-                Task<HttpResponseMessage> responseTask = httpClient.PostAsync(args[0], data);
-                responseTask.Wait();
-
+                HttpResponseMessage response = httpClient.PostAsync(args[0], data).Result;
                 httpClient.Dispose();
 
-                if (responseTask.Result.StatusCode != System.Net.HttpStatusCode.OK)
+                if (response.StatusCode != System.Net.HttpStatusCode.OK)
                 {
-                    Console.Error.WriteLine("File is too large. " + (fileBytes.Length / 1024f / 1024f).ToString("0.00", CultureInfo.InvariantCulture) + " MB");
+                    if (response.ReasonPhrase.ToLower().Contains("payload too large"))
+                        Console.Error.WriteLine("File is too large. " + (fileBytes.Length / 1024f / 1024f).ToString("0.00", CultureInfo.InvariantCulture) + " MB");
+                    else
+                        Console.Error.WriteLine("Discord Webhook response => StatusCode:" + response.StatusCode + " Reason: " + response.ReasonPhrase);
                     return 1;
                 }
             }
             catch (Exception e)
             {
-                Console.Error.Write(e);
+                Console.Error.WriteLine(e);
                 return 1;
             }
             return 0;

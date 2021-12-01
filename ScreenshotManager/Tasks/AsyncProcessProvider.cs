@@ -46,6 +46,7 @@ namespace ScreenshotManager.Tasks
             }
             catch (Exception e)
             {
+                await TaskProvider.YieldToMainThread();
                 MelonLogger.Error(processName + " >> " + e);
                 onComplete(false, -1);
             }

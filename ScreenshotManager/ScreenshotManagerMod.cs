@@ -12,7 +12,7 @@ using ScreenshotManager.Resources;
 using ScreenshotManager.UI;
 using ScreenshotManager.UI.Components;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.1.4", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.1.5", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 [assembly: MelonOptionalDependencies("LagFreeScreenshots")]
 
@@ -21,7 +21,7 @@ namespace ScreenshotManager
     public class ScreenshotManagerMod : MelonMod
     {
 
-        public static readonly string Version = "2.1.4";
+        public static readonly string Version = "2.1.5";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -80,9 +80,6 @@ namespace ScreenshotManager
             MelonLogger.Msg("Running version " + Version + " of ScreenshotManager.");
         }
 
-        public override void OnUpdate()
-        {
-            TaskProvider.mainThreadQueue.Dequeue();
-        }
+        public override void OnUpdate() => TaskProvider.mainThreadQueue.Dequeue();
     }
 }

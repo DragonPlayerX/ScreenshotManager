@@ -4,9 +4,10 @@ using System.Linq;
 using System.Reflection;
 using MelonLoader;
 using HarmonyLib;
-using UnhollowerRuntimeLib.XrefScans;
+using VRC.UserCamera;
 
 using ScreenshotManager.Config;
+using ScreenshotManager.Utils;
 
 namespace ScreenshotManager.Core
 {
@@ -73,17 +74,32 @@ namespace ScreenshotManager.Core
 
         public static void PatchMethod()
         {
-            MethodInfo method = typeof(VRC.UserCamera.CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).Single(it => it.GetParameters().Length == 2 && XrefScanner.XrefScan(it).Any(jt => jt.Type == XrefType.Global && jt.ReadAsObject()?.ToString() == "{0}/VRChat/{1}/VRChat_{2}x{3}_{4}.png"));
-            ScreenshotManagerMod.Instance.HarmonyInstance.Patch(method, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+            MethodInfo filePathMethod = typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && XrefUtils.CheckForString(method, "{0}{1}VRChat_{2}x{3}_{4}.png"));
+            ScreenshotManagerMod.Instance.HarmonyInstance.Patch(filePathMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FilePathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+
+            MelonLogger.Msg("Patched screenshot file method.");
+
+            MethodInfo fileDirectoryMethod = typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 0 && XrefUtils.CheckForString(method, "yyyy-MM"));
+            ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+
             MelonLogger.Msg("Patched screenshot directory method.");
         }
 
-        private static bool DirectoryPatch(ref string __result)
+        private static bool FilePathPatch(ref string __result)
         {
             if (Configuration.FileOrganization.Value)
                 __result = Configuration.ScreenshotDirectory.Value + "/" + DateTime.Now.ToString(Configuration.FileOrganizationFolder.Value) + "/VRChat_" + DateTime.Now.ToString(Configuration.FileOrganizationFile.Value) + ".png";
             else
                 __result = Configuration.ScreenshotDirectory.Value + "/VRChat_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".png";
+            return false;
+        }
+
+        private static bool DirectoryPathPatch(ref string __result)
+        {
+            if (Configuration.FileOrganization.Value)
+                __result = Configuration.ScreenshotDirectory.Value + "/" + DateTime.Now.ToString(Configuration.FileOrganizationFolder.Value);
+            else
+                __result = Configuration.ScreenshotDirectory.Value;
             return false;
         }
     }
