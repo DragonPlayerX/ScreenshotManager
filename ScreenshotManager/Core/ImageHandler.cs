@@ -166,6 +166,9 @@ namespace ScreenshotManager.Core
         public static void SelectLatest()
         {
             currentIndex = fileChache.Count - 1;
+            if (currentIndex < 0)
+                currentIndex = 0;
+
             Update(true);
         }
 
