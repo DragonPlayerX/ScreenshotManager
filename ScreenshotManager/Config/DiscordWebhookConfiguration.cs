@@ -1,11 +1,20 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Collections.Generic;
 using MelonLoader;
 
 namespace ScreenshotManager.Config
 {
     public class DiscordWebhookConfiguration
     {
+        private static readonly List<string> ValidURLs = new List<string>() {
+            "https://discordapp.com/api/webhooks/",
+            "https://discord.com/api/webhooks/",
+            "https://canary.discordapp.com/api/webhooks/",
+            "https://canary.discord.com/api/webhooks/",
+            "https://media.guilded.gg/webhooks/"
+        };
 
         private string file;
 
@@ -16,11 +25,9 @@ namespace ScreenshotManager.Config
         public Entry<string> Message;
         public Entry<string> CreationTimeFormat;
         public Entry<int> CompressionThreshold;
+        public Entry<bool> AutoUpload;
 
-        public DiscordWebhookConfiguration(string file)
-        {
-            this.file = file;
-        }
+        public DiscordWebhookConfiguration(string file) => this.file = file;
 
         public bool Load()
         {
@@ -34,6 +41,7 @@ namespace ScreenshotManager.Config
                 Message = new Entry<string>("Message", "New screenshot by {vrcname} taken at {world} {creationtime} {timestamp:R}").Read(lines);
                 CreationTimeFormat = new Entry<string>("CreationTimeFormat", "dd.MM.yyyy HH:mm:ss").Read(lines);
                 CompressionThreshold = new Entry<int>("CompressionThreshold", -1).Read(lines);
+                AutoUpload = new Entry<bool>("AutoUpload", false).Read(lines);
             }
             catch (Exception e)
             {
@@ -42,6 +50,8 @@ namespace ScreenshotManager.Config
             }
             return true;
         }
+
+        public bool IsValid() => ValidURLs.Any(validUrl => WebhookURL.Value.StartsWith(validUrl));
 
         public class Entry<T>
         {

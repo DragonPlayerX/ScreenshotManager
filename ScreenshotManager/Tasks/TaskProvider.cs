@@ -19,6 +19,14 @@ namespace ScreenshotManager.Tasks
             await Task.Run(() => { }).ConfigureAwait(false);
         }
 
+        public static async Task RunLater(Action action, int delay)
+        {
+            await YieldToBackgroundTask();
+            await Task.Delay(delay);
+            await YieldToMainThread();
+            action?.Invoke();
+        }
+
         public static void NoAwait(this Task task, Action onComplete = null)
         {
             task.ContinueWith(t =>

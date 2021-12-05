@@ -591,7 +591,7 @@ namespace ScreenshotManager.Core
         {
             webhookSubMenu.ClearButtonGroups();
             Configuration.LoadDiscordWebhooks();
-            foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhookConfig in Configuration.DiscordWebHooks)
+            foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhookConfig in Configuration.DiscordWebhooks)
             {
                 ButtonGroup buttonGroup = new ButtonGroup("Webhook_" + webhookConfig.Key, parent: webhookSubMenu.PageLayoutGroup.rectTransform);
                 buttonGroup.ButtonLayoutGroup.cellSize = new Vector2(800, 100);
@@ -599,7 +599,7 @@ namespace ScreenshotManager.Core
                 buttonGroup.ButtonLayoutGroup.childAlignment = TextAnchor.MiddleCenter;
                 WideButton button = new WideButton(new Action(() =>
                 {
-                    if (webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discordapp.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://discord.com/api/webhooks/") || webhookConfig.Value.WebhookURL.Value.ToLower().StartsWith("https://media.guilded.gg/webhooks/"))
+                    if (webhookConfig.Value.IsValid())
                     {
                         ImageHandler.SendToDiscordWebhook(webhookConfig.Key, webhookConfig.Value,
                             new Action(() => UiManager.PushQuickMenuAlert("Webhook - Uploading image...")),

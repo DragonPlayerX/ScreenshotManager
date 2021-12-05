@@ -79,6 +79,7 @@ namespace ScreenshotManager.Core
         {
             ImageHandler.AddFile(new FileInfo(__instance.field_Public_String_0));
             WriteMetadataAfterSave(__instance.field_Public_String_0);
+            TaskProvider.RunLater(() => ImageHandler.CheckForAutoUpload(__instance.field_Public_String_0), 3000).NoAwait();
         }
 
         private static void WriteMetadataAfterSave(string path)
@@ -295,6 +296,8 @@ namespace ScreenshotManager.Core
 
                     if (metadata == null)
                         WriteMetadataAfterSave(path);
+
+                    TaskProvider.RunLater(() => ImageHandler.CheckForAutoUpload(path), 3000).NoAwait();
                 });
             }
         }

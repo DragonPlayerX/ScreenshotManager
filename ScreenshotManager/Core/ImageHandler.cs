@@ -435,76 +435,93 @@ namespace ScreenshotManager.Core
             }
         }
 
+        public static void CheckForAutoUpload(string file)
+        {
+            foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhook in Configuration.DiscordWebhooks)
+            {
+                if (webhook.Value.AutoUpload.Value)
+                {
+                    if (webhook.Value.IsValid())
+                        SendToDiscordWebhookInternal(new FileInfo(file), webhook.Key, webhook.Value);
+                    else
+                        MelonLogger.Warning("The given Webhook URL [" + webhook.Key + "] is invalid.");
+                }
+            }
+        }
+
         public static void SendToDiscordWebhook(string webhookName, DiscordWebhookConfiguration webhookConfig, Action onUploading = null, Action onSuccess = null, Action onError = null)
         {
             if (selectedFile != null && !IsReloading)
+                SendToDiscordWebhookInternal(selectedFile, webhookName, webhookConfig, onUploading, onSuccess, onError);
+        }
+
+        private static void SendToDiscordWebhookInternal(FileInfo file, string webhookName, DiscordWebhookConfiguration webhookConfig, Action onUploading = null, Action onSuccess = null, Action onError = null)
+        {
+            if (!File.Exists(file.FullName))
             {
-                if (!File.Exists(selectedFile.FullName))
-                {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
-                    onError?.Invoke();
-                    return;
-                }
-
-                MelonLogger.Msg("Uploading " + selectedFile.Name + " to Discord [" + webhookName + "]...");
-                onUploading?.Invoke();
-
-                DateTime creationTime = Configuration.UseFileCreationTime.Value ? selectedFile.CreationTime : selectedFile.LastWriteTime;
-
-                string username = webhookConfig.SetUsername.Value ? (webhookConfig.Username.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : null;
-
-                string message = null;
-                if (webhookConfig.SetMessage.Value)
-                {
-                    string world = GetWorldTag(selectedFile, System.Drawing.Image.FromFile(selectedFile.FullName), true);
-                    message = webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)
-                        .Replace("{creationtime}", creationTime.ToString(webhookConfig.CreationTimeFormat.Value))
-                        .Replace("{world}", world ?? "<No World Tag>");
-
-                    int iterations = 0;
-                    while (message.Contains("{timestamp:"))
-                    {
-                        iterations++;
-                        if (iterations > 32)
-                            break;
-
-                        int startIndex = message.IndexOf("{timestamp:");
-                        int typeIndex = startIndex + 11;
-                        int endIndex = message.IndexOf("}", startIndex) + 1;
-
-                        char type = message[typeIndex];
-
-                        message = message.Remove(startIndex, endIndex - startIndex);
-                        message = message.Insert(startIndex, "<t:" + (long)(creationTime.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds + ":" + type + ">");
-                    }
-                }
-
-                ProcessStartInfo processStartInfo = new ProcessStartInfo();
-                processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";
-                processStartInfo.Arguments = "\""
-                    + webhookConfig.WebhookURL.Value + "\" \""
-                    + webhookConfig.SetUsername.Value.ToString() + "\" \""
-                    + username + "\" \""
-                    + webhookConfig.SetMessage.Value.ToString() + "\" \""
-                    + message + "\" \""
-                    + selectedFile.FullName + "\" \""
-                    + selectedFile.Name + "\" "
-                    + webhookConfig.CompressionThreshold.Value;
-
-                AsyncProcessProvider.StartProcess(processStartInfo, new Action<bool, int>((hasExited, exitCode) =>
-                {
-                    if (hasExited && exitCode == 0)
-                    {
-                        MelonLogger.Msg("File " + selectedFile.Name + " was uploaded to Discord [" + webhookName + "].");
-                        onSuccess.Invoke();
-                    }
-                    else
-                    {
-                        MelonLogger.Error("Error while uploading file " + selectedFile.Name + " to Discord [" + webhookName + "]. Process exited with " + exitCode);
-                        onError.Invoke();
-                    }
-                }), "DiscordWebhook").NoAwait();
+                MelonLogger.Error("File not found: " + file.FullName);
+                onError?.Invoke();
+                return;
             }
+
+            MelonLogger.Msg("Uploading " + file.Name + " to Discord [" + webhookName + "]...");
+            onUploading?.Invoke();
+
+            DateTime creationTime = Configuration.UseFileCreationTime.Value ? file.CreationTime : file.LastWriteTime;
+
+            string username = webhookConfig.SetUsername.Value ? (webhookConfig.Username.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)) : null;
+
+            string message = null;
+            if (webhookConfig.SetMessage.Value)
+            {
+                string world = GetWorldTag(file, System.Drawing.Image.FromFile(file.FullName), true);
+                message = webhookConfig.Message.Value.Replace("{vrcname}", APIUser.CurrentUser.displayName)
+                    .Replace("{creationtime}", creationTime.ToString(webhookConfig.CreationTimeFormat.Value))
+                    .Replace("{world}", world ?? "<No World Tag>");
+
+                int iterations = 0;
+                while (message.Contains("{timestamp:"))
+                {
+                    iterations++;
+                    if (iterations > 32)
+                        break;
+
+                    int startIndex = message.IndexOf("{timestamp:");
+                    int typeIndex = startIndex + 11;
+                    int endIndex = message.IndexOf("}", startIndex) + 1;
+
+                    char type = message[typeIndex];
+
+                    message = message.Remove(startIndex, endIndex - startIndex);
+                    message = message.Insert(startIndex, "<t:" + (long)(creationTime.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalSeconds + ":" + type + ">");
+                }
+            }
+
+            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+            processStartInfo.FileName = AppDomain.CurrentDomain.BaseDirectory + "/Executables/DiscordWebhook.exe";
+            processStartInfo.Arguments = "\""
+                + webhookConfig.WebhookURL.Value + "\" \""
+                + webhookConfig.SetUsername.Value.ToString() + "\" \""
+                + username + "\" \""
+                + webhookConfig.SetMessage.Value.ToString() + "\" \""
+                + message + "\" \""
+                + file.FullName + "\" \""
+                + file.Name + "\" "
+                + webhookConfig.CompressionThreshold.Value;
+
+            AsyncProcessProvider.StartProcess(processStartInfo, new Action<bool, int>((hasExited, exitCode) =>
+            {
+                if (hasExited && exitCode == 0)
+                {
+                    MelonLogger.Msg("File " + file.Name + " was uploaded to Discord [" + webhookName + "].");
+                    onSuccess?.Invoke();
+                }
+                else
+                {
+                    MelonLogger.Error("Error while uploading file " + file.Name + " to Discord [" + webhookName + "]. Process exited with " + exitCode);
+                    onError?.Invoke();
+                }
+            }), "DiscordWebhook").NoAwait();
         }
 
         public static bool ImportToSteam()

@@ -29,7 +29,7 @@ namespace ScreenshotManager.Config
 
         public static bool HasChanged;
 
-        public static Dictionary<string, DiscordWebhookConfiguration> DiscordWebHooks = new Dictionary<string, DiscordWebhookConfiguration>();
+        public static Dictionary<string, DiscordWebhookConfiguration> DiscordWebhooks = new Dictionary<string, DiscordWebhookConfiguration>();
 
         public static void Init()
         {
@@ -53,16 +53,18 @@ namespace ScreenshotManager.Config
 
         public static void LoadDiscordWebhooks()
         {
-            DiscordWebHooks.Clear();
+            DiscordWebhooks.Clear();
             foreach (FileInfo fileInfo in new DirectoryInfo("UserData/ScreenshotManager/DiscordWebhooks").EnumerateFiles())
             {
+                if (!fileInfo.Extension.Equals(".cfg")) continue;
+
                 DiscordWebhookConfiguration discordWebhookConfiguration = new DiscordWebhookConfiguration(fileInfo.FullName);
                 if (discordWebhookConfiguration.Load())
-                    DiscordWebHooks.Add(fileInfo.Name.Substring(0, fileInfo.Name.LastIndexOf(".")), discordWebhookConfiguration);
+                    DiscordWebhooks.Add(fileInfo.Name.Substring(0, fileInfo.Name.LastIndexOf(".")), discordWebhookConfiguration);
                 else
                     MelonLogger.Error("Failed to load Webhook file: " + fileInfo.FullName);
             }
-            MelonLogger.Msg("Loaded " + DiscordWebHooks.Count + " Discord Webhooks.");
+            MelonLogger.Msg("Loaded " + DiscordWebhooks.Count + " Discord Webhooks.");
         }
 
         public static void Save()
