@@ -106,8 +106,8 @@ namespace ScreenshotManager.Core
             MultiImageContainer = MainImageContainerRect.Find("MultiImage_Container").gameObject;
             MultiImageContainer.SetActive(Configuration.MultiView.Value);
 
-            MainImageContainer.SetLayerRecursive(12);
-            SecondaryImageContainer.SetLayerRecursive(12);
+            MainImageContainer.SetLayerRecursive(LayerMask.NameToLayer("InternalUI"));
+            SecondaryImageContainer.SetLayerRecursive(LayerMask.NameToLayer("InternalUI"));
 
             MainImageContainer.SetActive(true);
             SecondaryImageContainer.SetActive(true);
