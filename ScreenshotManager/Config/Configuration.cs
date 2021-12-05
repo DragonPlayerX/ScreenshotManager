@@ -17,7 +17,6 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> FileOrganization;
         public static MelonPreferences_Entry<string> FileOrganizationFolder;
         public static MelonPreferences_Entry<string> FileOrganizationFile;
-        public static MelonPreferences_Entry<bool> DiscordWebhook;
         public static MelonPreferences_Entry<bool> TabButton;
         public static MelonPreferences_Entry<int> TodayHourOffset;
         public static MelonPreferences_Entry<bool> MultiView;
@@ -37,7 +36,6 @@ namespace ScreenshotManager.Config
             FileOrganization = CreateEntry("FileOrganization", false, "File Organization");
             FileOrganizationFolder = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
             FileOrganizationFile = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
-            DiscordWebhook = CreateEntry("DiscordWebHook", false, "Discord Webhook");
             TabButton = CreateEntry("TabButton", true, "TabButton");
             TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
             MultiView = CreateEntry("MultiView", false, "MultiView");

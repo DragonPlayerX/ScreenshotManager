@@ -504,9 +504,6 @@ namespace ScreenshotManager.Core
                 menuButton.GameObject.SetActive(!newValue);
             });
 
-            ToggleButton webhookStateButton = new ToggleButton(new Action<bool>(state => Configuration.DiscordWebhook.Value = state), Sprites["Share"], Sprites["X"], "Discord Webhook", "Discord Webhook", "Disable Discord Webhook", "Enable Discord Webhook", "Button_WebhookState", Configuration.DiscordWebhook.Value);
-            Configuration.DiscordWebhook.OnValueChanged += new Action<bool, bool>((oldValue, newValue) => webhookStateButton.State = newValue);
-
             ToggleButton showRotationControlButton = new ToggleButton(new Action<bool>(state => Configuration.ShowRotationButtons.Value = state), Sprites["RotateRight"], Sprites["X"], "Rotation Buttons", "Rotation Buttons", "Hide rotation buttons", "Show rotation buttons", "Button_RotationButtonsState", Configuration.ShowRotationButtons.Value);
             Configuration.ShowRotationButtons.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
@@ -518,7 +515,6 @@ namespace ScreenshotManager.Core
             ToggleButton autoSwitchToLatest = new ToggleButton(new Action<bool>(state => Configuration.AutoSelectLatest.Value = state), Sprites["Gallery"], Sprites["X"], "Auto Select Latest", "Auto Select Latest", "Disable automatic selection of the latest picture on menu open", "Enable automatic selection of the latest picture on menu open", "Button_Metadata", Configuration.AutoSelectLatest.Value);
 
             settingsMenuButtonGroup2.AddButton(buttonTypeButton);
-            settingsMenuButtonGroup2.AddButton(webhookStateButton);
             settingsMenuButtonGroup2.AddButton(showRotationControlButton);
             settingsMenuButtonGroup2.AddButton(autoSwitchToLatest);
             settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup2);
