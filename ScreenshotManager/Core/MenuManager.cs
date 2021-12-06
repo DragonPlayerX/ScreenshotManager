@@ -523,9 +523,11 @@ namespace ScreenshotManager.Core
             new ButtonHeader(settingsSubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Other Actions", "Actions_Header");
 
             SingleButton reloadWebhooksButton = new SingleButton(new Action(() => ReloadDiscordWebhookButtons()), Sprites["Reload"], "Reload Webhooks", "Reload all Webhook files", "Button_ReloadWebhooks");
+            SingleButton openWebhookConfigFolder = new SingleButton(new Action(() => Process.Start("explorer.exe", "\"" + AppDomain.CurrentDomain.BaseDirectory + "\\UserData\\ScreenshotManager\\DiscordWebhooks\"")), Sprites["Share"], "Webhook Folder", "Open the folder where webhook configurations are located", "Button_WebhookFolder");
             SingleButton openGitHubPageButton = new SingleButton(new Action(() => Application.OpenURL("https://github.com/DragonPlayerX/ScreenshotManager")), Sprites["GitHub"], "Open GitHub", "Open the GitHub page of this mod", "Button_GitHub");
 
             settingsMenuButtonGroup3.AddButton(reloadWebhooksButton);
+            settingsMenuButtonGroup3.AddButton(openWebhookConfigFolder);
             settingsMenuButtonGroup3.AddButton(openGitHubPageButton);
             settingsSubMenu.AddButtonGroup(settingsMenuButtonGroup3);
 
