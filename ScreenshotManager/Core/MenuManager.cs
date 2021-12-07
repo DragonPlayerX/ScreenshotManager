@@ -64,6 +64,7 @@ namespace ScreenshotManager.Core
             { "Share", null },
             { "Trash", null },
             { "Star", null },
+            { "StarOutline", null },
             { "Tab", null },
             { "File", null },
             { "Upload", null },
@@ -307,7 +308,7 @@ namespace ScreenshotManager.Core
                     }
                     else
                     {
-                        FavoriteButton.Sprite = Sprites["X"];
+                        FavoriteButton.Sprite = Sprites["StarOutline"];
                         FavoriteButton.Text = "Favorite";
                         FavoriteButton.TooltipText = "Favorite this image";
                     }
@@ -387,11 +388,11 @@ namespace ScreenshotManager.Core
                 }
                 else
                 {
-                    FavoriteButton.Sprite = Sprites["X"];
+                    FavoriteButton.Sprite = Sprites["StarOutline"];
                     FavoriteButton.Text = "Favorite";
                     FavoriteButton.TooltipText = "Favorite this image";
                 }
-            }), Sprites["X"], "Unfavorite", "Unfavorite this image", "Button_Favorite");
+            }), Sprites["StarOutline"], "Unfavorite", "Unfavorite this image", "Button_Favorite");
 
             actionsButton.OnClick += new Action(() =>
             {
@@ -403,7 +404,7 @@ namespace ScreenshotManager.Core
                 }
                 else
                 {
-                    FavoriteButton.Sprite = Sprites["X"];
+                    FavoriteButton.Sprite = Sprites["StarOutline"];
                     FavoriteButton.Text = "Favorite";
                     FavoriteButton.TooltipText = "Favorite this image";
                 }
