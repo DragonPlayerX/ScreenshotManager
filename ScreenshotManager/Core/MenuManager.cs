@@ -113,7 +113,7 @@ namespace ScreenshotManager.Core
             MainImageContainer.SetActive(true);
             SecondaryImageContainer.SetActive(true);
 
-            TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "ScreenshotManager_Main", "Screenshot Manager", "Page_ScreenshotManager");
+            TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "QuickMenuScreenshotManager", "Screenshot Manager", "Page_ScreenshotManager");
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
             TabButton.GameObject.SetActive(Configuration.TabButton.Value);
@@ -257,10 +257,10 @@ namespace ScreenshotManager.Core
             InfoButtonHeader.RectTransform.SetSiblingIndex(0);
             InfoButtonHeader.Minimize();
 
-            SubMenu categoriesSubMenu = new SubMenu("ScreenshotManagerCategories", "Menu_ScreenshotManager_Categories", "Select Category", true);
-            SubMenu actionsSubMenu = new SubMenu("ScreenshotManagerActions", "Menu_ScreenshotManager_Actions", "Photo Actions", true);
-            SubMenu settingsSubMenu = new SubMenu("ScreenshotManagerSettings", "Menu_ScreenshotManager_Settings", "Settings", true);
-            webhookSubMenu = new SubMenu("ScreenshotManagerWebhooks", "Menu_ScreenshotManager_Webhooks", "Select Webhook", true, true);
+            SubMenu categoriesSubMenu = new SubMenu("QuickMenuScreenshotManagerCategories", "Menu_ScreenshotManager_Categories", "Select Category", true);
+            SubMenu actionsSubMenu = new SubMenu("QuickMenuScreenshotManagerActions", "Menu_ScreenshotManager_Actions", "Photo Actions", true);
+            SubMenu settingsSubMenu = new SubMenu("QuickMenuScreenshotManagerSettings", "Menu_ScreenshotManager_Settings", "Settings", true);
+            webhookSubMenu = new SubMenu("QuickMenuScreenshotManagerWebhooks", "Menu_ScreenshotManager_Webhooks", "Select Webhook", true, true);
 
             actionsSubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
             actionsSubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
