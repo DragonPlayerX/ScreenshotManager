@@ -2,7 +2,7 @@
 
 ## Known Issues
 
-- Automatic image loading is **not** compatible with LagFreeScreenshots
+- Automatic image loading/uploading is **not** compatible with LagFreeScreenshots
     - It will work if this gets published https://github.com/knah/VRCMods/pull/178
 
 ## Requirements
@@ -82,6 +82,10 @@ Available tags for username and message of the webhook:
     - {creationtime} = Image creation time formatted with the "CreationTimeFormat" value of the webhook file
     - {timestamp:\<value\>} = Embed the Discord Timestamp support
 
+### How to use Discord Timestamps
+
+![Discord Timestamps](https://i.imgur.com/lDvBjQn.png)
+
 ### How does the compression works?
 
 The Webhook config file contains an property called "CompressionThreshold" (default value is -1). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
@@ -90,9 +94,11 @@ You only have to set the compression threshold to the upload limit (in megabyte)
 
 The image compression will only work for **PNG** images because it converts these to **JPEG** images which are less quality but also less file size.
 
-### How to use Discord Timestamps
+### How does automatic uploading works?
 
-![Discord Timestamps](https://i.imgur.com/lDvBjQn.png)
+The Webhook config file contains an property called "AutoUpload" (default value is false). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
+
+If you set the AutoUpload to true, it will automatically send a new taken picture after 3 seconds to the corresponding webhook.
 
 ## Steam Integration
 
