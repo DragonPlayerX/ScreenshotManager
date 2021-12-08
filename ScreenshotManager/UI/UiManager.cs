@@ -40,17 +40,17 @@ namespace ScreenshotManager.UI
             QuickMenu = quickMenuObject.GetComponent<VRCQuickMenu>();
             quickMenuAlert = quickMenuObject.transform.Find("Container/Window/QMParent/Modal_Alert").GetComponent<ModalAlert>();
 
-            modalAlertMethod = FindMethod("ModalAlert", () => typeof(ModalAlert).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_") && method.GetParameters().Length == 1 && !method.Name.Contains("PDM") && XrefUtils.CheckUsedByType(method, typeof(UIMenu))));
+            modalAlertMethod = FindMethod("ModalAlert", () => typeof(ModalAlert).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_") && method.GetParameters().Length == 1 && !method.Name.Contains("PDM") && XrefUtils.CheckUsedByType(method, typeof(UIMenu)) && XrefUtils.CheckForUsingMethods(method, "Method_Public_Void_0")));
             infoPopupMethod = FindMethod("InfoPopup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_Action_") && method.GetParameters().Length == 3 && XrefUtils.CheckForString(method, "ConfirmDialog")));
             popupMethod = FindMethod("Popup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_String_String_Action_Action_") && method.GetParameters().Length == 6 && XrefUtils.CheckForString(method, "ConfirmDialog")));
-            openSubMenuMethod = FindMethod("Open SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_TransitionType_") && method.GetParameters().Length == 2 && XrefUtils.CheckForUsingMethods(method, "Add")));
+            openSubMenuMethod = FindMethod("Open SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_TransitionType_") && method.GetParameters().Length == 2 && XrefUtils.CheckForUsingMethods(method, "Add") && !XrefUtils.CheckForUsingMethods(method, "Remove")));
             popSubMenuMethod = FindMethod("Pop SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_") && method.GetParameters().Length == 0 && XrefUtils.CheckUsedByType(method, typeof(MenuStateController)) && XrefScanner.UsedBy(method).Count() <= 5));
 #if DEBUG
             MelonLogger.Msg("ModalAlert Method: " + modalAlertMethod?.Name);
             MelonLogger.Msg("InfoPopup Method: " + infoPopupMethod?.Name);
             MelonLogger.Msg("Popup Method: " + popupMethod?.Name);
             MelonLogger.Msg("Open SubMenu Method: " + openSubMenuMethod?.Name);
-            MelonLogger.Msg("Pop SubMenu Method: " + popupMethod?.Name);
+            MelonLogger.Msg("Pop SubMenu Method: " + popSubMenuMethod?.Name);
 #endif
         }
 
