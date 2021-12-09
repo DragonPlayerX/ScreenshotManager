@@ -12,7 +12,7 @@ using ScreenshotManager.Resources;
 using ScreenshotManager.UI;
 using ScreenshotManager.UI.Components;
 
-[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.2.1", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
+[assembly: MelonInfo(typeof(ScreenshotManagerMod), "ScreenshotManager", "2.3.0", "DragonPlayer", "https://github.com/DragonPlayerX/ScreenshotManager")]
 [assembly: MelonGame("VRChat", "VRChat")]
 [assembly: MelonOptionalDependencies("LagFreeScreenshots")]
 
@@ -21,7 +21,7 @@ namespace ScreenshotManager
     public class ScreenshotManagerMod : MelonMod
     {
 
-        public static readonly string Version = "2.2.1";
+        public static readonly string Version = "2.3.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
 
@@ -64,8 +64,7 @@ namespace ScreenshotManager
         private IEnumerator Init()
         {
             while (VRCUiManager.field_Private_Static_VRCUiManager_0 == null) yield return null;
-            while (GameObject.Find("UserInterface").transform.Find("Canvas_QuickMenu(Clone)/Container/Window/QMParent") == null)
-                yield return null;
+            while (GameObject.Find("UserInterface").transform.Find("Canvas_QuickMenu(Clone)/Container/Window/QMParent") == null) yield return null;
 
             UiManager.UiInit();
 

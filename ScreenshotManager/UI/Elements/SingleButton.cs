@@ -25,7 +25,7 @@ namespace ScreenshotManager.UI.Elements
             set => _image.sprite = value;
         }
 
-        public SingleButton(Action onClick, Sprite icon, string text, string tooltip, string gameObjectName) : base(onClick, null, UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Dashboard/ScrollRect/Viewport/VerticalLayoutGroup/Buttons_QuickLinks/Button_Worlds").gameObject, gameObjectName)
+        public SingleButton(Action onClick, Sprite icon, string text, string tooltip, string gameObjectName, Transform parent = null) : base(onClick, parent, UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Dashboard/ScrollRect/Viewport/VerticalLayoutGroup/Buttons_QuickLinks/Button_Worlds").gameObject, gameObjectName)
         {
             RectTransform.Find("Badge_MMJump").gameObject.SetActive(false);
 

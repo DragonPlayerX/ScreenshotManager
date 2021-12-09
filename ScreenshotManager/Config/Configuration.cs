@@ -25,6 +25,7 @@ namespace ScreenshotManager.Config
         public static MelonPreferences_Entry<bool> ShowRotationButtons;
         public static MelonPreferences_Entry<bool> WriteImageMetadata;
         public static MelonPreferences_Entry<bool> AutoSelectLatest;
+        public static MelonPreferences_Entry<int> ZoomFactor;
 
         public static bool HasChanged;
 
@@ -44,6 +45,7 @@ namespace ScreenshotManager.Config
             ShowRotationButtons = CreateEntry("ShowRotationButtons", true, "Show Rotation Buttons");
             WriteImageMetadata = CreateEntry("WriteImageMetadata", true, "Image Metadata");
             AutoSelectLatest = CreateEntry("AutoSelectLatest", false, "Auto Select Latest Image");
+            ZoomFactor = CreateEntry("ZoomFactor", 4, "Zoom Factor");
 
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");

@@ -8,6 +8,16 @@ namespace ScreenshotManager.Utils
     public static class Extensions
     {
 
+        public static float Clamp(this float value, int range)
+        {
+            if (value > range)
+                return range;
+            else if (value < -range)
+                return -range;
+            else
+                return value;
+        }
+
         public static void SetLayerRecursive(this GameObject gameObject, int layer)
         {
             gameObject.layer = layer;

@@ -69,6 +69,10 @@ namespace ScreenshotManager.Core
 
         public static ImageMenuCategory CurrentCategory;
 
+        public static bool IsReloading { get; private set; } = false;
+
+        public static event Action ImageLoadedEvent;
+
         private static ImageWrapper singleImageWrapper;
         private static ImageWrapper secondarySingleImageWrapper;
         private static ImageWrapper[] multiImageWrappers = new ImageWrapper[9];
@@ -76,8 +80,6 @@ namespace ScreenshotManager.Core
         private static List<FileInfo> fileChache = new List<FileInfo>();
         private static FileInfo selectedFile;
         private static int currentIndex = 0;
-
-        public static bool IsReloading { get; private set; } = false;
 
         public static void Init()
         {
@@ -248,6 +250,8 @@ namespace ScreenshotManager.Core
                 imageWrapper.Image.texture = MenuManager.ErrorTexture;
                 imageWrapper.Image.transform.parent.localScale = new Vector3(1 * size, 1 * size, 1);
             }
+
+            ImageLoadedEvent?.Invoke();
         }
 
         private static void DestroyTexture(ImageWrapper imageWrapper, float size = 1)
@@ -328,9 +332,8 @@ namespace ScreenshotManager.Core
                 else
                 {
                     if (!Directory.Exists(Configuration.ScreenshotDirectory.Value + "/Favorites"))
-                    {
                         Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value + "/Favorites");
-                    }
+
                     path = Configuration.ScreenshotDirectory.Value + "/Favorites/" + selectedFile.Name;
                 }
 

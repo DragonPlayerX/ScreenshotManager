@@ -131,8 +131,7 @@ namespace ScreenshotManager.Core
 
             // Editing existing menus
 
-            SingleButton menuButton = new SingleButton(new Action(() => TabButton.MenuTab.ShowTabContent()), Sprites["Gallery"], "Screenshot Manager", "Open Screenshot Manager", "Button_ScreenshotManager");
-            menuButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
+            SingleButton menuButton = new SingleButton(new Action(() => TabButton.MenuTab.ShowTabContent()), Sprites["Gallery"], "Screenshot Manager", "Open Screenshot Manager", "Button_ScreenshotManager", UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons"));
             menuButton.GameObject.SetActive(!Configuration.TabButton.Value);
             menuButton.OnClick += new Action(() =>
             {
@@ -147,8 +146,7 @@ namespace ScreenshotManager.Core
             GameObject oldFolderButton = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons/Button_PhotosFolder").gameObject;
             oldFolderButton.SetActive(false);
 
-            SingleButton openFolderButton = new SingleButton(new Action(() => Process.Start("explorer.exe", "\"" + Configuration.ScreenshotDirectory.Value + "\"")), oldFolderButton.transform.Find("Icon").GetComponent<Image>().sprite, "Open Photos Folder", "Open the folder where photos are saved", "Button_ScreenshotManager_PhotosFolder");
-            openFolderButton.RectTransform.parent = UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons");
+            SingleButton openFolderButton = new SingleButton(new Action(() => Process.Start("explorer.exe", "\"" + Configuration.ScreenshotDirectory.Value + "\"")), oldFolderButton.transform.Find("Icon").GetComponent<Image>().sprite, "Open Photos Folder", "Open the folder where photos are saved", "Button_ScreenshotManager_PhotosFolder", UiManager.QMStateController.transform.Find("Container/Window/QMParent/Menu_Camera/Scrollrect/Viewport/VerticalLayoutGroup/Buttons"));
 
             // Styles & Build-in stuff
 
@@ -534,19 +532,52 @@ namespace ScreenshotManager.Core
 
             // Animations
 
-            Animator sizeAnimator = SingleImageContainer.transform.GetComponent<Animator>();
+            bool zoom = false;
+            RectTransform singleImageRect = SingleImageContainer.transform.Find("SingleImage_Mask/Image").gameObject.GetComponent<RectTransform>();
+            Button zoomButton = singleImageRect.gameObject.GetComponent<Button>();
 
-            SingleImageContainer.transform.Find("SingleImage_Mask/Image").GetComponent<Button>().onClick.AddListener(new Action(() =>
+            ImageHandler.ImageLoadedEvent += new Action(() =>
             {
-                if (sizeAnimator.GetBool("Size Trigger"))
+                singleImageRect.sizeDelta = new Vector2(2048, 1152);
+                singleImageRect.localPosition = Vector2.zero;
+                zoom = false;
+            });
+
+            GameObject leftCursor = GameObject.Find("_Application/CursorManager/DotLeftHand/VRCUICursorIcon");
+            GameObject rightCursor = GameObject.Find("_Application/CursorManager/DotRightHand/VRCUICursorIcon");
+            GameObject desktopCursor = GameObject.Find("_Application/CursorManager/MouseArrow/VRCUICursorIcon");
+
+            zoomButton.onClick.AddListener(new Action(() =>
+            {
+                if (zoom)
                 {
-                    sizeAnimator.SetBool("Size Trigger", false);
-                    singleImageStyle.enabled = true;
+                    singleImageRect.sizeDelta = new Vector2(2048, 1152);
+                    singleImageRect.localPosition = Vector2.zero;
+                    zoom = false;
                 }
                 else
                 {
-                    sizeAnimator.SetBool("Size Trigger", true);
-                    singleImageStyle.enabled = false;
+                    Vector3 target;
+                    if (!desktopCursor.transform.parent.gameObject.activeSelf)
+                        target = leftCursor.transform.parent.gameObject.activeSelf ? leftCursor.transform.position : rightCursor.transform.position;
+                    else
+                        target = desktopCursor.transform.position;
+
+                    Vector3 imagePosition = zoomButton.transform.parent.InverseTransformPoint(target);
+                    if (singleImageRect.sizeDelta.x > singleImageRect.sizeDelta.y)
+                    {
+                        imagePosition.x = imagePosition.x.Clamp(1024 - 1024 / Configuration.ZoomFactor.Value);
+                        imagePosition.y = imagePosition.y.Clamp(576 - 576 / Configuration.ZoomFactor.Value);
+                    }
+                    else
+                    {
+                        imagePosition.x = imagePosition.x.Clamp(576 - 576 / Configuration.ZoomFactor.Value);
+                        imagePosition.y = imagePosition.y.Clamp(1024 - 1024 / Configuration.ZoomFactor.Value);
+                    }
+
+                    singleImageRect.sizeDelta = new Vector2(2048 * Configuration.ZoomFactor.Value, 1152 * Configuration.ZoomFactor.Value);
+                    singleImageRect.localPosition = new Vector2(-imagePosition.x * Configuration.ZoomFactor.Value, -imagePosition.y * Configuration.ZoomFactor.Value);
+                    zoom = true;
                 }
             }));
 
@@ -575,10 +606,10 @@ namespace ScreenshotManager.Core
                 rightControlAnimator.ResetTrigger("Selected");
                 rightControlAnimator.ResetTrigger("Disabled");
 
-                sizeAnimator.Rebind();
-                sizeAnimator.Update(0);
-                sizeAnimator.SetBool("Size Trigger", false);
-                singleImageStyle.enabled = true;
+                singleImageRect.sizeDelta = new Vector2(2048, 1152);
+                singleImageRect.localPosition = Vector2.zero;
+                zoom = false;
+
                 Configuration.Save();
             });
 
