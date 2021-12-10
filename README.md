@@ -43,9 +43,9 @@
 
 ### Menu Screenshot
 
-![UI Screenshot 1](https://i.imgur.com/gta8f8G.png) 
-![UI Screenshot 2](https://i.imgur.com/oki8Wfn.png)
-![UI Screenshot 3](https://i.imgur.com/ZBC2uyr.png)
+![UI Screenshot 1](https://i.imgur.com/QkaeRSc.png) 
+![UI Screenshot 2](https://i.imgur.com/CNo4VaJ.png)
+![UI Screenshot 3](https://i.imgur.com/cbEfaRp.png)
 
 ## Texture loading
 
