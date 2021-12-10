@@ -23,14 +23,14 @@ namespace ScreenshotManager.UI.Elements
         {
             MenuTab = GameObject.GetComponent<MenuTab>();
             MenuTab.field_Private_MenuStateController_0 = UiManager.QMStateController;
-            MenuTab.field_Public_String_0 = pageName;
+            MenuTab.field_Public_String_0 = "QuickMenu" + pageName;
 
             _image = RectTransform.Find("Icon").GetComponent<Image>();
             _image.sprite = icon;
 
             TooltipText = tooltip;
 
-            SubMenu = new TabMenu(pageName, "Menu_" + pageName, pageTitle);
+            SubMenu = new TabMenu("QuickMenu" + pageName, "Menu_" + pageName, pageTitle);
         }
     }
 }

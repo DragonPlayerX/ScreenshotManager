@@ -113,7 +113,7 @@ namespace ScreenshotManager.Core
             MainImageContainer.SetActive(true);
             SecondaryImageContainer.SetActive(true);
 
-            TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "QuickMenuScreenshotManager", "Screenshot Manager", "Page_ScreenshotManager");
+            TabButton = new TabButton(Sprites["Gallery"], "Screenshot Manager", "ScreenshotManager", "Screenshot Manager", "Page_ScreenshotManager");
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().sizeDelta = new Vector2(0, 50);
             TabButton.SubMenu.GameObject.transform.Find("ScrollRect/Viewport").GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
             TabButton.GameObject.SetActive(Configuration.TabButton.Value);
