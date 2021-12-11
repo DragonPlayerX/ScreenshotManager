@@ -1,10 +1,5 @@
 # Screenshot Manager
 
-## Known Issues
-
-- Automatic image loading/uploading is **not** compatible with LagFreeScreenshots
-    - It will work if this gets published https://github.com/knah/VRCMods/pull/178
-
 ## Requirements
 
 - [MelonLoader 0.4.x](https://melonwiki.xyz/)
@@ -37,7 +32,7 @@
 
 ### Planned Features
 
-- Automatic loading of new screenshots without pressing reload or switching category (works without LagFreeScreenshots currently)
+- *Nothing currently, you can request features by creating a github issue*
 
 ---
 
