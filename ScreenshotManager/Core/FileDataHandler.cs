@@ -68,7 +68,7 @@ namespace ScreenshotManager.Core
             }
             else
             {
-                if (lfsAssembly.GetType("LagFreeScreenshots.EventHandler", false) != null)
+                if (lfsAssembly.GetType("LagFreeScreenshots.API.LfsApi", false) != null)
                     LFSIntegration.InitLFS();
                 else
                     MelonLogger.Warning("Your version of LagFreeScreenshots does not support events.");
@@ -290,7 +290,7 @@ namespace ScreenshotManager.Core
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static void InitLFS()
             {
-                LagFreeScreenshots.EventHandler.OnScreenshotSaved += new Action<string, int, int, LagFreeScreenshots.Metadata>((path, width, height, metadata) =>
+                LagFreeScreenshots.API.LfsApi.OnScreenshotSavedV2 += delegate (string path, int width, int height, LagFreeScreenshots.API.MetadataV2 metadata)
                 {
                     ImageHandler.AddFile(new FileInfo(path));
 
@@ -298,7 +298,7 @@ namespace ScreenshotManager.Core
                         WriteMetadataAfterSave(path);
 
                     TaskProvider.RunLater(() => ImageHandler.CheckForAutoUpload(path), 3000).NoAwait();
-                });
+                };
             }
         }
     }
