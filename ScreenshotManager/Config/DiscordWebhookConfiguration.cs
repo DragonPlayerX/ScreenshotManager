@@ -71,8 +71,8 @@ namespace ScreenshotManager.Config
                 {
                     if (line.Contains("="))
                     {
-                        string[] content = line.Split('=');
-                        if (content.Length == 2 && content[0].Trim().Equals(Name))
+                        string[] content = line.Split(new char[] { '=' }, 2);
+                        if (content[0].Trim().Equals(Name))
                         {
                             Value = (T)Convert.ChangeType(content[1].Trim(), typeof(T));
                             return this;
