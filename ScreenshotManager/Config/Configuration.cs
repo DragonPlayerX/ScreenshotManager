@@ -51,7 +51,7 @@ namespace ScreenshotManager.Config
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");
         }
 
-        public static void LoadDiscordWebhooks()
+        public static int LoadDiscordWebhooks()
         {
             DiscordWebhooks.Clear();
             foreach (FileInfo fileInfo in new DirectoryInfo("UserData/ScreenshotManager/DiscordWebhooks").EnumerateFiles())
@@ -65,6 +65,7 @@ namespace ScreenshotManager.Config
                     MelonLogger.Error("Failed to load Webhook file: " + fileInfo.FullName);
             }
             MelonLogger.Msg("Loaded " + DiscordWebhooks.Count + " Discord Webhooks.");
+            return DiscordWebhooks.Count;
         }
 
         public static void Save()

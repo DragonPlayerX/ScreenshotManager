@@ -48,7 +48,7 @@ namespace DiscordWebhook
                     if (response.ReasonPhrase.ToLower().Contains("payload too large"))
                         Console.Error.WriteLine("File is too large. " + (fileBytes.Length / 1024f / 1024f).ToString("0.00", CultureInfo.InvariantCulture) + " MB");
                     else
-                        Console.Error.WriteLine("Discord Webhook response => StatusCode:" + response.StatusCode + " Reason: " + response.ReasonPhrase);
+                        Console.Error.WriteLine("Upload request failed => StatusCode: " + response.StatusCode + " (" + (int)response.StatusCode + ") | ReasonPhrase: " + response.ReasonPhrase + " | Content: " + response.Content.ReadAsStringAsync().Result);
                     return 1;
                 }
             }

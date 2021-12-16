@@ -313,7 +313,7 @@ namespace ScreenshotManager.Core
                 }
                 else
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Your selection is empty.", new Action(() => { }));
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Your selection is empty.", null);
                 }
             }), Sprites["Actions"], "Actions", "Manage the current image", "Button_Actions");
 
@@ -408,7 +408,7 @@ namespace ScreenshotManager.Core
                 }
             });
 
-            SingleButton shareButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(webhookSubMenu)), Sprites["Share"], "Share", "Share this image on via Discord Webhook", "Button_Share");
+            SingleButton shareButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(webhookSubMenu)), Sprites["Share"], "Share", "Share this image via Discord Webhook", "Button_Share");
 
             SingleButton uploadToGalleryButton = null;
             uploadToGalleryButton = new SingleButton(new Action(() =>
@@ -438,14 +438,14 @@ namespace ScreenshotManager.Core
             {
                 ImageHandler.DeletePicture();
                 TabButton.SubMenu.CloseAllSubMenus();
-            }), new Action(() => { }))), Sprites["Trash"], "Delete", "Delete this image", "Button_Delete");
+            }), null)), Sprites["Trash"], "Delete", "Delete this image", "Button_Delete");
 
             SingleButton importToSteamButton = null;
             importToSteamButton = new SingleButton(new Action(() =>
             {
                 if (!SteamIntegration.Enabled)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Steam Integration is disabled because it failed to load the Steam API.", new Action(() => { }));
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Steam Integration is disabled because it failed to load the Steam API.", null);
                     return;
                 }
 
@@ -482,7 +482,7 @@ namespace ScreenshotManager.Core
                     UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null);
             }), Sprites["Manually"], "Manually Organize", "Organize all files manually", "ManuallyFileOrganizationButton");
 
-            SingleButton resetOrganizationButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset()), new Action(() => { }))), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
+            SingleButton resetOrganizationButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset()), null)), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
 
             ToggleButton writeMetadataButton = new ToggleButton(new Action<bool>(state => Configuration.WriteImageMetadata.Value = state), Sprites["Data"], Sprites["X"], "World Metadata", "World Metadata", "Disable saving of world metadata to images", "Enable saving of world metadata to images", "Button_Metadata", Configuration.WriteImageMetadata.Value);
 
@@ -620,7 +620,7 @@ namespace ScreenshotManager.Core
         public static void ReloadDiscordWebhookButtons()
         {
             webhookSubMenu.ClearButtonGroups();
-            Configuration.LoadDiscordWebhooks();
+            int loaded = Configuration.LoadDiscordWebhooks();
             foreach (KeyValuePair<string, DiscordWebhookConfiguration> webhookConfig in Configuration.DiscordWebhooks)
             {
                 ButtonGroup buttonGroup = new ButtonGroup("Webhook_" + webhookConfig.Key, parent: webhookSubMenu.PageLayoutGroup.rectTransform);
@@ -645,6 +645,7 @@ namespace ScreenshotManager.Core
                 buttonGroup.AddButton(button);
                 webhookSubMenu.AddButtonGroup(buttonGroup);
             }
+            UiManager.PushQuickMenuAlert("Loaded " + loaded + " Discord Webhooks.");
         }
     }
 }
