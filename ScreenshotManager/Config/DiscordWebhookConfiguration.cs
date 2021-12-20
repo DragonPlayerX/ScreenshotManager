@@ -13,6 +13,8 @@ namespace ScreenshotManager.Config
             "https://discord.com/api/webhooks/",
             "https://canary.discordapp.com/api/webhooks/",
             "https://canary.discord.com/api/webhooks/",
+            "https://ptb.discordapp.com/api/webhooks/",
+            "https://ptb.discord.com/api/webhooks/",
             "https://media.guilded.gg/webhooks/"
         };
 
