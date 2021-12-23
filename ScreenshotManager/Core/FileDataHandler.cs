@@ -77,6 +77,9 @@ namespace ScreenshotManager.Core
 
         private static void DefaultVRCScreenshotResultPatch(ScreenshotFileHandler __instance)
         {
+            if (__instance == null || __instance.field_Public_String_0 == null)
+                return;
+
             ImageHandler.AddFile(new FileInfo(__instance.field_Public_String_0));
             WriteMetadataAfterSave(__instance.field_Public_String_0);
             TaskProvider.RunLater(() => ImageHandler.CheckForAutoUpload(__instance.field_Public_String_0), 3000).NoAwait();
