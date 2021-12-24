@@ -40,11 +40,11 @@ namespace ScreenshotManager.UI
             QuickMenu = quickMenuObject.GetComponent<VRCQuickMenu>();
             quickMenuAlert = quickMenuObject.transform.Find("Container/Window/QMParent/Modal_Alert").GetComponent<ModalAlert>();
 
-            modalAlertMethod = FindMethod("ModalAlert", () => typeof(ModalAlert).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_") && method.GetParameters().Length == 1 && !method.Name.Contains("PDM") && XrefUtils.CheckUsedByType(method, typeof(UIMenu)) && XrefUtils.CheckForUsingMethods(method, "Method_Public_Void_0")));
-            infoPopupMethod = FindMethod("InfoPopup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_Action_") && method.GetParameters().Length == 3 && XrefUtils.CheckForString(method, "ConfirmDialog")));
-            popupMethod = FindMethod("Popup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_String_String_Action_Action_") && method.GetParameters().Length == 6 && XrefUtils.CheckForString(method, "ConfirmDialog")));
-            openSubMenuMethod = FindMethod("Open SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_TransitionType_") && method.GetParameters().Length == 2 && XrefUtils.CheckForUsingMethods(method, "Add") && !XrefUtils.CheckForUsingMethods(method, "Remove")));
-            popSubMenuMethod = FindMethod("Pop SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_") && method.GetParameters().Length == 0 && XrefUtils.CheckForUsingMethods(method, "Method_Public_Void_Predicate_1_UIPage_0") && !XrefUtils.CheckForUsingMethods(method, "ThrowArgumentOutOfRangeException") && XrefUtils.CheckForUsingMethods(method, "op_Equality")));
+            modalAlertMethod = MethodUtils.FindMethod("ModalAlert", () => typeof(ModalAlert).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_") && method.GetParameters().Length == 1 && !method.Name.Contains("PDM") && MethodUtils.IsUsedByType(method, typeof(UIMenu)) && MethodUtils.IsUsingMethod(method, "Method_Public_Void_0")));
+            infoPopupMethod = MethodUtils.FindMethod("InfoPopup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_Action_") && method.GetParameters().Length == 3 && MethodUtils.ContainsString(method, "ConfirmDialog")));
+            popupMethod = MethodUtils.FindMethod("Popup", () => typeof(VRCQuickMenu).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_String_String_String_String_Action_Action_") && method.GetParameters().Length == 6 && MethodUtils.ContainsString(method, "ConfirmDialog")));
+            openSubMenuMethod = MethodUtils.FindMethod("Open SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_TransitionType_") && method.GetParameters().Length == 2 && MethodUtils.IsUsingMethod(method, "Add") && !MethodUtils.IsUsingMethod(method, "Remove")));
+            popSubMenuMethod = MethodUtils.FindMethod("Pop SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_") && method.GetParameters().Length == 0 && MethodUtils.IsUsingMethod(method, "Method_Public_Void_Predicate_1_UIPage_0") && !MethodUtils.IsUsingMethod(method, "ThrowArgumentOutOfRangeException") && MethodUtils.IsUsingMethod(method, "op_Equality")));
 #if DEBUG
             MelonLogger.Msg("ModalAlert Method: " + modalAlertMethod?.Name);
             MelonLogger.Msg("InfoPopup Method: " + infoPopupMethod?.Name);
@@ -52,19 +52,6 @@ namespace ScreenshotManager.UI
             MelonLogger.Msg("Open SubMenu Method: " + openSubMenuMethod?.Name);
             MelonLogger.Msg("Pop SubMenu Method: " + popSubMenuMethod?.Name);
 #endif
-        }
-
-        private static MethodInfo FindMethod(string method, Func<MethodInfo> methodFunction)
-        {
-            try
-            {
-                return methodFunction.Invoke();
-            }
-            catch (Exception)
-            {
-                MelonLogger.Error("Unable to find method for " + method);
-            }
-            return null;
         }
 
         public static void PushQuickMenuAlert(string text) => modalAlertMethod?.Invoke(quickMenuAlert, new object[] { text });

@@ -1,12 +1,27 @@
 ﻿using System;
 using System.Reflection;
+using MelonLoader;
 using UnhollowerRuntimeLib.XrefScans;
 
 namespace ScreenshotManager.Utils
 {
-    public static class XrefUtils
+    public static class MethodUtils
     {
-        public static bool CheckForString(MethodBase method, string content)
+
+        public static MethodInfo FindMethod(string debugName, Func<MethodInfo> methodFunction)
+        {
+            try
+            {
+                return methodFunction.Invoke();
+            }
+            catch (Exception)
+            {
+                MelonLogger.Error("Unable to find method for " + debugName);
+            }
+            return null;
+        }
+
+        public static bool ContainsString(MethodBase method, string content)
         {
             foreach (XrefInstance instance in XrefScanner.XrefScan(method))
             {
@@ -16,7 +31,7 @@ namespace ScreenshotManager.Utils
             return false;
         }
 
-        public static bool CheckForUsingMethods(MethodBase method, string methodName)
+        public static bool IsUsingMethod(MethodBase method, string methodName)
         {
             foreach (XrefInstance instance in XrefScanner.XrefScan(method))
             {
@@ -26,7 +41,7 @@ namespace ScreenshotManager.Utils
             return false;
         }
 
-        public static bool CheckUsedByType(MethodBase method, Type type)
+        public static bool IsUsedByType(MethodBase method, Type type)
         {
             foreach (XrefInstance instance in XrefScanner.UsedBy(method))
             {

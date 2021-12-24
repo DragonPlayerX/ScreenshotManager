@@ -74,16 +74,27 @@ namespace ScreenshotManager.Core
 
         public static void PatchMethod()
         {
-            MethodInfo filePathMethod = typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && XrefUtils.CheckForString(method, "{0}{1}VRChat_{2}x{3}_{4}.png"));
-            ScreenshotManagerMod.Instance.HarmonyInstance.Patch(filePathMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FilePathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+            MethodInfo filePathMethod = MethodUtils.FindMethod("FileName Method", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && MethodUtils.ContainsString(method, "{0}{1}VRChat_{2}x{3}_{4}.png")));
+            if (filePathMethod != null)
+            {
+                ScreenshotManagerMod.Instance.HarmonyInstance.Patch(filePathMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FilePathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+                MelonLogger.Msg("Patched screenshot file method.");
+            }
+            else
+            {
+                MelonLogger.Warning("Failed to patch the screenshot file method. Organization of files will break!");
+            }
 
-            MelonLogger.Msg("Patched screenshot file method.");
-
-            MethodInfo fileDirectoryMethod = typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 0 && XrefUtils.CheckForString(method, "yyyy-MM"));
-            ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-
-            MelonLogger.Msg("Patched screenshot directory method.");
-
+            MethodInfo fileDirectoryMethod = MethodUtils.FindMethod("FolderName Method", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 0 && MethodUtils.ContainsString(method, "yyyy-MM")));
+            if (fileDirectoryMethod != null)
+            {
+                ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+                MelonLogger.Msg("Patched screenshot directory method.");
+            }
+            else
+            {
+                MelonLogger.Warning("Failed to patch the screenshot directory method. Organization of files will break!");
+            }
 #if DEBUG
             MelonLogger.Msg("FileName Method: " + filePathMethod?.Name);
             MelonLogger.Msg("FolderName Method: " + fileDirectoryMethod?.Name);
