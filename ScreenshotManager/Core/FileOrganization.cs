@@ -83,6 +83,11 @@ namespace ScreenshotManager.Core
             ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
 
             MelonLogger.Msg("Patched screenshot directory method.");
+
+#if DEBUG
+            MelonLogger.Msg("FileName Method: " + filePathMethod?.Name);
+            MelonLogger.Msg("FolderName Method: " + fileDirectoryMethod?.Name);
+#endif
         }
 
         private static bool FilePathPatch(ref string __result)
