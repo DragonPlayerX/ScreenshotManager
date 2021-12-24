@@ -16,6 +16,7 @@ using ScreenshotFileHandler = VRC.UserCamera.CameraUtil.ObjectNPrivateSealedStOb
 
 using ScreenshotManager.Config;
 using ScreenshotManager.Tasks;
+using ScreenshotManager.Utils;
 
 namespace ScreenshotManager.Core
 {
@@ -64,7 +65,19 @@ namespace ScreenshotManager.Core
 
             if (lfsAssembly == null)
             {
-                ScreenshotManagerMod.Instance.HarmonyInstance.Patch(typeof(ScreenshotFileHandler).GetMethod("_TakeScreenShot_b__1"), postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+                MethodInfo takeScreenshotMethod = MethodUtils.FindMethod("TakeScreenshot", () => typeof(ScreenshotFileHandler).GetMethods().First(method => method.Name.Contains("TakeScreenShot")));
+                if (takeScreenshotMethod != null)
+                {
+                    ScreenshotManagerMod.Instance.HarmonyInstance.Patch(takeScreenshotMethod, postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
+                    MelonLogger.Msg("Patched take screenshot method.");
+                }
+                else
+                {
+                    MelonLogger.Warning("Failed to patch the take screenshot method. Photo capture detection will not work!");
+                }
+#if DEBUG
+                MelonLogger.Msg("TakeScreenshot Method: " + takeScreenshotMethod?.Name);
+#endif
             }
             else
             {
