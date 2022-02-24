@@ -49,6 +49,7 @@ namespace ScreenshotManager.UI.Elements
         public ButtonGroup AddButton(ElementBase button)
         {
             button.RectTransform.parent = ButtonLayoutGroup.transform;
+            button.RectTransform.localRotation = Quaternion.Euler(Vector3.zero);
             _buttons.Add(button);
             return this;
         }

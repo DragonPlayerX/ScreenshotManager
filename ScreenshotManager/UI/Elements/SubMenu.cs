@@ -61,6 +61,7 @@ namespace ScreenshotManager.UI.Elements
         public void AddHeaderButton(HeaderButton button)
         {
             button.GameObject.transform.parent = RectTransform.Find("Header_H1/RightItemContainer");
+            button.GameObject.transform.localRotation = Quaternion.Euler(Vector3.zero);
         }
 
         public void AddButtonGroup(ButtonGroup buttonGroup)
@@ -69,6 +70,7 @@ namespace ScreenshotManager.UI.Elements
             if (buttonGroup.Header != null)
                 buttonGroup.Header.RectTransform.parent = PageLayoutGroup.rectTransform;
             buttonGroup.RectTransform.parent = PageLayoutGroup.rectTransform;
+            buttonGroup.RectTransform.localRotation = Quaternion.Euler(Vector3.zero);
             _buttonGroups.Add(buttonGroup);
         }
 
