@@ -69,7 +69,7 @@ namespace ScreenshotManager.UI.Elements
             onImage.sprite = onIcon;
             offImage.sprite = offIcon;
 
-            BindingExtensions.Method_Public_Static_ToggleBindingHelper_Toggle_Action_1_Boolean_0(ToggleComponent, new Action<bool>(state =>
+            ObjectPublicAbstractSealedVoGa9326CoAc63Ac26CoUnique.Method_Public_Static_ToggleBindingHelper_Toggle_Action_1_Boolean_0(ToggleComponent, new Action<bool>(state =>
             {
                 if (state)
                     Text = _onText;

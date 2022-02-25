@@ -36,7 +36,7 @@ namespace ScreenshotManager.UI.Elements
 
             TitleText = RectTransform.Find("Header_H1/LeftItemContainer/Text_Title").GetComponent<TextMeshProUGUI>();
             UiPage = GameObject.AddComponent<UIPage>();
-            UiPage.field_Private_MenuStateController_0 = UiManager.QMStateController;
+            UiPage.field_Protected_MenuStateController_0 = UiManager.QMStateController;
             UiPage.field_Public_String_0 = pageName;
 
             UiManager.QMStateController.field_Private_Dictionary_2_String_UIPage_0.Add(pageName, UiPage);
