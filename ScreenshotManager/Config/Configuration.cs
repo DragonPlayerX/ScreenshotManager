@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using MelonLoader;
+using MelonLoader.Preferences;
 
 using ScreenshotManager.Resources;
 
@@ -10,7 +11,6 @@ namespace ScreenshotManager.Config
 {
     public static class Configuration
     {
-
         private static readonly MelonPreferences_Category Category = MelonPreferences.CreateCategory("ScreenshotManager", "Screenshot Manager");
 
         public static MelonPreferences_Entry<string> ScreenshotDirectory;
@@ -50,7 +50,7 @@ namespace ScreenshotManager.Config
             FileOrganization = CreateEntry("FileOrganization", false, "File Organization");
             FileOrganizationFolderTimeFormat = CreateEntry("FileOrganizationFolderTimeFormat", "yyyy.MM.dd", "Folder Time Format");
             FileOrganizationFileTimeFormat = CreateEntry("FileOrganizationFileTimeFormat", "yyyy.MM.dd_HH-mm-ss.fff", "File Time Format");
-            FileOrganizationNameFormat = CreateEntry("FileOrganizationNameFormat", "VRChat_{timestamp}", "File Name Format");
+            FileOrganizationNameFormat = CreateEntry("FileOrganizationNameFormat", "VRChat_{timestamp}", "File Name Format", new StringValidator("VRChat_{timestamp}", "{timestamp}"));
             TabButton = CreateEntry("TabButton", true, "TabButton");
             TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset");
             MultiView = CreateEntry("MultiView", false, "MultiView");
@@ -61,15 +61,7 @@ namespace ScreenshotManager.Config
             AutoSelectLatest = CreateEntry("AutoSelectLatest", false, "Auto Select Latest Image");
             ZoomFactor = CreateEntry("ZoomFactor", 4, "Zoom Factor");
 
-            FileOrganizationNameFormat.OnValueChanged += new Action<string, string>((oldValue, newValue) =>
-            {
-                if (!newValue.Contains("{timestamp}"))
-                {
-                    FileOrganizationNameFormat.ResetToDefault();
-                    Category.SaveToFile(false);
-                    MelonLogger.Warning("Name format for the file organization has been reset to default value. It must contain \"{timestamp}\"!");
-                }
-            });
+            Category.SaveToFile(false);
 
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");
@@ -102,11 +94,36 @@ namespace ScreenshotManager.Config
             }
         }
 
-        private static MelonPreferences_Entry<T> CreateEntry<T>(string name, T defaultValue, string displayname, string description = null)
+        private static MelonPreferences_Entry<T> CreateEntry<T>(string name, T defaultValue, string displayname, ValueValidator valueValidator = null)
         {
-            MelonPreferences_Entry<T> entry = Category.CreateEntry<T>(name, defaultValue, displayname, description);
+            MelonPreferences_Entry<T> entry = Category.CreateEntry<T>(name, defaultValue, displayname, validator: valueValidator);
             entry.OnValueChangedUntyped += new Action(() => HasChanged = true);
             return entry;
+        }
+
+        private class StringValidator : ValueValidator
+        {
+            public string DefaultValue;
+            public string Content;
+
+            public StringValidator(string defaultValue, string content)
+            {
+                DefaultValue = defaultValue;
+                Content = content;
+            }
+
+            public override object EnsureValid(object value)
+            {
+                if (IsValid(value))
+                    return value;
+                else
+                    return DefaultValue;
+            }
+
+            public override bool IsValid(object value)
+            {
+                return (value as string).Contains(Content);
+            }
         }
     }
 }
