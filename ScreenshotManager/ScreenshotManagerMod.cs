@@ -50,11 +50,11 @@ namespace ScreenshotManager
             if (!Directory.Exists(Configuration.ScreenshotDirectory.Value))
                 Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value);
 
+            FileDataHandler.Init();
+
             FileOrganization.PatchMethod();
             if (Configuration.FileOrganization.Value)
-                FileOrganization.OrganizeAll();
-
-            FileDataHandler.Init();
+                FileOrganization.OrganizeAll().NoAwait();
 
             ClassInjector.RegisterTypeInIl2Cpp<EnableDisableListener>();
 

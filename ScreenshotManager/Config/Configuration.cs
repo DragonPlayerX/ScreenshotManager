@@ -15,8 +15,9 @@ namespace ScreenshotManager.Config
 
         public static MelonPreferences_Entry<string> ScreenshotDirectory;
         public static MelonPreferences_Entry<bool> FileOrganization;
-        public static MelonPreferences_Entry<string> FileOrganizationFolder;
-        public static MelonPreferences_Entry<string> FileOrganizationFile;
+        public static MelonPreferences_Entry<string> FileOrganizationFolderTimeFormat;
+        public static MelonPreferences_Entry<string> FileOrganizationFileTimeFormat;
+        public static MelonPreferences_Entry<string> FileOrganizationNameFormat;
         public static MelonPreferences_Entry<bool> TabButton;
         public static MelonPreferences_Entry<int> TodayHourOffset;
         public static MelonPreferences_Entry<bool> MultiView;
@@ -33,12 +34,25 @@ namespace ScreenshotManager.Config
 
         public static void Init()
         {
+            Category.DeleteEntry("DiscordWebhookURL");
+            Category.DeleteEntry("DiscordWebHook");
+            Category.DeleteEntry("DiscordWebhookSetUsernameEntry");
+            Category.DeleteEntry("DiscordWebhookUsernameEntry");
+            Category.DeleteEntry("DiscordWebhookSetMessageEntry");
+            Category.DeleteEntry("DiscordWebhookMessageEntry");
+            Category.DeleteEntry("UseUIX");
+            Category.DeleteEntry("MoveGalleryButton");
+
+            Category.RenameEntry("FileOrganizationFolderName", "FileOrganizationFolderTimeFormat");
+            Category.RenameEntry("FileOrganizationFileName", "FileOrganizationFileTimeFormat");
+
             ScreenshotDirectory = CreateEntry("ScreenshotDirectory", Environment.GetFolderPath(Environment.SpecialFolder.MyPictures) + "\\VRChat", "Screenshot Directory");
             FileOrganization = CreateEntry("FileOrganization", false, "File Organization");
-            FileOrganizationFolder = CreateEntry("FileOrganizationFolderName", "yyyy.MM.dd", "Organization Folder Name");
-            FileOrganizationFile = CreateEntry("FileOrganizationFileName", "yyyy.MM.dd_HH-mm-ss.fff", "Organization File Name");
+            FileOrganizationFolderTimeFormat = CreateEntry("FileOrganizationFolderTimeFormat", "yyyy.MM.dd", "Folder Time Format");
+            FileOrganizationFileTimeFormat = CreateEntry("FileOrganizationFileTimeFormat", "yyyy.MM.dd_HH-mm-ss.fff", "File Time Format");
+            FileOrganizationNameFormat = CreateEntry("FileOrganizationNameFormat", "VRChat_{timestamp}", "File Name Format");
             TabButton = CreateEntry("TabButton", true, "TabButton");
-            TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset", "Offset the reset of today's pictures");
+            TodayHourOffset = CreateEntry("TodayHourOffset", 0, "Today Hour Offset");
             MultiView = CreateEntry("MultiView", false, "MultiView");
             LastCategory = CreateEntry("LastCategory", 1, "Last Category");
             UseFileCreationTime = CreateEntry("UseFileCreationTime", false, "Use File Creation Time");
@@ -46,6 +60,16 @@ namespace ScreenshotManager.Config
             WriteImageMetadata = CreateEntry("WriteImageMetadata", true, "Image Metadata");
             AutoSelectLatest = CreateEntry("AutoSelectLatest", false, "Auto Select Latest Image");
             ZoomFactor = CreateEntry("ZoomFactor", 4, "Zoom Factor");
+
+            FileOrganizationNameFormat.OnValueChanged += new Action<string, string>((oldValue, newValue) =>
+            {
+                if (!newValue.Contains("{timestamp}"))
+                {
+                    FileOrganizationNameFormat.ResetToDefault();
+                    Category.SaveToFile(false);
+                    MelonLogger.Warning("Name format for the file organization has been reset to default value. It must contain \"{timestamp}\"!");
+                }
+            });
 
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");

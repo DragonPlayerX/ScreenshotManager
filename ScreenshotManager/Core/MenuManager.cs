@@ -165,22 +165,58 @@ namespace ScreenshotManager.Core
 
             Button controlLeftNavigateButton = controlLeft.Find("Button_Mask/Button_Navigate").GetComponent<Button>();
             controlLeftNavigateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
-            controlLeftNavigateButton.onClick.AddListener(new Action(() => ImageHandler.Previous()));
+            controlLeftNavigateButton.onClick.AddListener(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                ImageHandler.Previous();
+            }));
 
             Button controlLeftRotateButton = controlLeft.Find("Button_Mask/Button_Rotate").GetComponent<Button>();
             controlLeftRotateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
-            controlLeftRotateButton.onClick.AddListener(new Action(() => ImageHandler.RotateImage(ImageHandler.Direction.Left)));
+            controlLeftRotateButton.onClick.AddListener(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                ImageHandler.RotateImage(ImageHandler.Direction.Left);
+            }));
 
             Transform controlRight = MainImageContainerRect.Find("Control_Right");
             controlRight.GetComponent<RectTransform>().anchoredPosition3D += new Vector3(0, 0, -5);
 
             Button controlRightNavigateButton = controlRight.Find("Button_Mask/Button_Navigate").GetComponent<Button>();
             controlRightNavigateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
-            controlRightNavigateButton.onClick.AddListener(new Action(() => ImageHandler.Next()));
+            controlRightNavigateButton.onClick.AddListener(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                ImageHandler.Next();
+            }));
 
             Button controlRightRotateButton = controlRight.Find("Button_Mask/Button_Rotate").GetComponent<Button>();
             controlRightRotateButton.gameObject.AddComponent<StyleElement>().field_Public_String_1 = "ButtonIcon";
-            controlRightRotateButton.onClick.AddListener(new Action(() => ImageHandler.RotateImage(ImageHandler.Direction.Right)));
+            controlRightRotateButton.onClick.AddListener(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                ImageHandler.RotateImage(ImageHandler.Direction.Right);
+            }));
 
             controlLeftRotateButton.gameObject.SetActive(Configuration.ShowRotationButtons.Value);
             controlRightRotateButton.gameObject.SetActive(Configuration.ShowRotationButtons.Value);
@@ -272,6 +308,12 @@ namespace ScreenshotManager.Core
             ToggleButton viewButton = new ToggleButton(new Action<bool>(state => Configuration.MultiView.Value = state), Sprites["Grid"], Sprites["Gallery"], "Multi View", "Single View", "Switch to single image view mode", "Switch to multi image view mode", "Button_View", Configuration.MultiView.Value);
             Configuration.MultiView.OnValueChanged += new Action<bool, bool>((oldValue, newValue) =>
             {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
                 viewButton.State = newValue;
                 SingleImageContainer.SetActive(!newValue);
                 MultiImageContainer.SetActive(newValue);
@@ -285,10 +327,25 @@ namespace ScreenshotManager.Core
                     ImageHandler.Update(true);
             });
 
-            SingleButton categoriesButton = new SingleButton(new Action(() => TabButton.SubMenu.OpenSubMenu(categoriesSubMenu)), Sprites["Category"], "Categories", "Select a view category", "Button_Categories");
+            SingleButton categoriesButton = new SingleButton(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                TabButton.SubMenu.OpenSubMenu(categoriesSubMenu);
+            }), Sprites["Category"], "Categories", "Select a view category", "Button_Categories");
 
             SingleButton actionsButton = new SingleButton(new Action(() =>
             {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
                 if (ImageHandler.IsReloading)
                     return;
 
@@ -327,7 +384,16 @@ namespace ScreenshotManager.Core
 
             new ButtonHeader(TabButton.SubMenu.RectTransform.Find("ScrollRect/Viewport/VerticalLayoutGroup"), "Version " + ScreenshotManagerMod.Version, "Version_Header");
 
-            HeaderButton headerButton = new HeaderButton(new Action(() => ImageHandler.ReloadFiles().NoAwait()), Sprites["Reload"], "Reload all images", "Button_ReloadImages");
+            HeaderButton headerButton = new HeaderButton(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                ImageHandler.ReloadFiles().NoAwait();
+            }), Sprites["Reload"], "Reload all images", "Button_ReloadImages");
             TabButton.SubMenu.AddHeaderButton(headerButton);
             headerButton.GameObject.transform.localPosition = new Vector3(0, 0, -1);
 
@@ -476,13 +542,28 @@ namespace ScreenshotManager.Core
 
             SingleButton manuallyOrganizeButton = new SingleButton(new Action(() =>
             {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
                 if (Configuration.FileOrganization.Value)
-                    FileOrganization.OrganizeAll();
+                    FileOrganization.OrganizeAll().NoAwait();
                 else
                     UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null);
             }), Sprites["Manually"], "Manually Organize", "Organize all files manually", "ManuallyFileOrganizationButton");
 
-            SingleButton resetOrganizationButton = new SingleButton(new Action(() => UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset()), null)), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
+            SingleButton resetOrganizationButton = new SingleButton(new Action(() =>
+            {
+                if (FileOrganization.IsWorking)
+                {
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    return;
+                }
+
+                UiManager.ShowQuickMenuPopup("Reset File Organization", "Are you sure to reset File Organization?", "YES", "NO", new Action(() => FileOrganization.Reset().NoAwait()), null);
+            }), Sprites["Blocked"], "Reset Organization", "Reset the whole file organization", "Button_ResetFileOrganization");
 
             ToggleButton writeMetadataButton = new ToggleButton(new Action<bool>(state => Configuration.WriteImageMetadata.Value = state), Sprites["Data"], Sprites["X"], "World Metadata", "World Metadata", "Disable saving of world metadata to images", "Enable saving of world metadata to images", "Button_Metadata", Configuration.WriteImageMetadata.Value);
 

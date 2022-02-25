@@ -319,22 +319,22 @@ namespace ScreenshotManager.Core
                     if (Configuration.FileOrganization.Value)
                     {
                         DateTime creationTime = selectedFile.LastWriteTime;
-                        string directory = Configuration.ScreenshotDirectory.Value + "/" + creationTime.ToString(Configuration.FileOrganizationFolder.Value);
+                        string directory = Configuration.ScreenshotDirectory.Value + "\\" + creationTime.ToString(Configuration.FileOrganizationFolderTimeFormat.Value);
                         if (!Directory.Exists(directory))
                             Directory.CreateDirectory(directory);
-                        path = directory + "/VRChat_" + creationTime.ToString(Configuration.FileOrganizationFile.Value) + selectedFile.Extension;
+                        path = directory + "\\" + FileOrganization.CreateFileName(selectedFile.FullName, creationTime) + selectedFile.Extension;
                     }
                     else
                     {
-                        path = Configuration.ScreenshotDirectory.Value + "/" + selectedFile.Name;
+                        path = Configuration.ScreenshotDirectory.Value + "\\" + selectedFile.Name;
                     }
                 }
                 else
                 {
-                    if (!Directory.Exists(Configuration.ScreenshotDirectory.Value + "/Favorites"))
-                        Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value + "/Favorites");
+                    if (!Directory.Exists(Configuration.ScreenshotDirectory.Value + "\\Favorites"))
+                        Directory.CreateDirectory(Configuration.ScreenshotDirectory.Value + "\\Favorites");
 
-                    path = Configuration.ScreenshotDirectory.Value + "/Favorites/" + selectedFile.Name;
+                    path = Configuration.ScreenshotDirectory.Value + "\\Favorites\\" + selectedFile.Name;
                 }
 
                 MenuManager.FavoriteButton.ButtonComponent.enabled = false;
