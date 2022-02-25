@@ -2,14 +2,12 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using VRC.DataModel.Core;
 using VRC.UI.Elements.Tooltips;
 
 namespace ScreenshotManager.UI.Elements
 {
     public class ToggleButton : ElementBase
     {
-
         public bool State
         {
             get => ToggleComponent.isOn;
@@ -69,7 +67,7 @@ namespace ScreenshotManager.UI.Elements
             onImage.sprite = onIcon;
             offImage.sprite = offIcon;
 
-            BindingExtensions.Method_Public_Static_ToggleBindingHelper_Toggle_Action_1_Boolean_0(ToggleComponent, new Action<bool>(state =>
+            ToggleComponent.onValueChanged.AddListener(new Action<bool>(state =>
             {
                 if (state)
                     Text = _onText;

@@ -16,13 +16,11 @@ using ScreenshotFileHandler = VRC.UserCamera.CameraUtil.ObjectNPrivateSealedStOb
 
 using ScreenshotManager.Config;
 using ScreenshotManager.Tasks;
-using ScreenshotManager.Utils;
 
 namespace ScreenshotManager.Core
 {
     public static class FileDataHandler
     {
-
         // First 8 bytes of a PNG are always theses values otherwise the signature or file is corrupted
         private static readonly byte[] PngSignature = new byte[] { 137, 80, 78, 71, 13, 10, 26, 10 };
 
@@ -65,19 +63,14 @@ namespace ScreenshotManager.Core
 
             if (lfsAssembly == null)
             {
-                MethodInfo takeScreenshotMethod = MethodUtils.FindMethod("TakeScreenshot", () => typeof(ScreenshotFileHandler).GetMethods().First(method => method.Name.Contains("TakeScreenShot")));
-                if (takeScreenshotMethod != null)
+                MethodInfo[] methods = typeof(ScreenshotFileHandler).GetMethods();
+                foreach (MethodInfo method in methods)
                 {
-                    ScreenshotManagerMod.Instance.HarmonyInstance.Patch(takeScreenshotMethod, postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-                    MelonLogger.Msg("Patched take screenshot method.");
+                    if (method.Name.StartsWith("Method_Internal_Void_PDM_"))
+                        ScreenshotManagerMod.Instance.HarmonyInstance.Patch(method, postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
                 }
-                else
-                {
-                    MelonLogger.Warning("Failed to patch the take screenshot method. Photo capture detection will not work!");
-                }
-#if DEBUG
-                MelonLogger.Msg("TakeScreenshot Method: " + takeScreenshotMethod?.Name);
-#endif
+
+                MelonLogger.Msg("Patched take screenshot methods.");
             }
             else
             {
