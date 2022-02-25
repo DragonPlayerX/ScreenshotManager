@@ -2,7 +2,9 @@
 
 ## Requirements
 
-- [MelonLoader 0.4.x](https://melonwiki.xyz/)
+- [MelonLoader 0.5.3+](https://melonwiki.xyz/)
+
+**Version 2.4.0+ of ScreenshotManager is not compatible with MelonLoader below version 0.5.3!**
 
 ## Features
 
@@ -50,9 +52,9 @@ You may experience a little bit of lag when going through your pictures (only re
 
 Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore.
 
-**PhotoOrganization seems to be broken now caused by the new UI update.**
-
 If you used the PhotoOrganization Mod before you may encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> click on "Reset Organization" and then click on "Manually Organization". The mod will reset all things (restore filenames and deleting old folders) and then create new folders and move the files.
+
+You can fully modify the name of your images with the config entry called "FileOrganizationNameFormat". The default value is "VRChat_{timestamp}" and **must** contain "{timestamp}" otherwise it would get reset. Another possible option would be to put "{resolution}" into it, it will put the image resolution in the file name.
 
 ## Discord Webhook
  
