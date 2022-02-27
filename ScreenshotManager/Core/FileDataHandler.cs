@@ -70,14 +70,14 @@ namespace ScreenshotManager.Core
                         ScreenshotManagerMod.Instance.HarmonyInstance.Patch(method, postfix: new HarmonyMethod(typeof(FileDataHandler).GetMethod(nameof(DefaultVRCScreenshotResultPatch), BindingFlags.Static | BindingFlags.NonPublic)));
                 }
 
-                MelonLogger.Msg("Patched take screenshot methods.");
+                ScreenshotManagerMod.Logger.Msg("Patched take screenshot methods.");
             }
             else
             {
                 if (lfsAssembly.GetType("LagFreeScreenshots.API.LfsApi", false) != null)
                     LFSIntegration.InitLFS();
                 else
-                    MelonLogger.Warning("Your version of LagFreeScreenshots does not support events.");
+                    ScreenshotManagerMod.Logger.Warning("Your version of LagFreeScreenshots does not support events.");
             }
         }
 
@@ -117,7 +117,7 @@ namespace ScreenshotManager.Core
                 await TaskProvider.YieldToMainThread();
 
                 if (!result)
-                    MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
+                    ScreenshotManagerMod.Logger.Warning("Failed to write image metadata. Image will be saved without any data.");
             }).NoAwait();
         }
 
@@ -131,7 +131,7 @@ namespace ScreenshotManager.Core
 
                 if (!Enumerable.SequenceEqual(fileSignature, PngSignature))
                 {
-                    MelonLogger.Warning("No PNG signature found in file: " + file);
+                    ScreenshotManagerMod.Logger.Warning("No PNG signature found in file: " + file);
                     return false;
                 }
 
@@ -191,8 +191,8 @@ namespace ScreenshotManager.Core
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
-                MelonLogger.Error("Error while writing png chunks");
+                ScreenshotManagerMod.Logger.Error(e);
+                ScreenshotManagerMod.Logger.Error("Error while writing png chunks");
                 return false;
             }
         }
@@ -207,7 +207,7 @@ namespace ScreenshotManager.Core
 
                 if (!Enumerable.SequenceEqual(fileSignature, PngSignature))
                 {
-                    MelonLogger.Warning("No PNG signature found in file: " + file);
+                    ScreenshotManagerMod.Logger.Warning("No PNG signature found in file: " + file);
                     return null;
                 }
 
@@ -239,8 +239,8 @@ namespace ScreenshotManager.Core
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
-                MelonLogger.Error("Error while reading png chunks");
+                ScreenshotManagerMod.Logger.Error(e);
+                ScreenshotManagerMod.Logger.Error("Error while reading png chunks");
                 return null;
             }
         }
@@ -274,8 +274,8 @@ namespace ScreenshotManager.Core
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
-                MelonLogger.Error("Error while writing jpeg properties");
+                ScreenshotManagerMod.Logger.Error(e);
+                ScreenshotManagerMod.Logger.Error("Error while writing jpeg properties");
                 return false;
             }
         }

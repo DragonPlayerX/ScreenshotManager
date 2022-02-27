@@ -76,9 +76,9 @@ namespace ScreenshotManager.Config
                 if (discordWebhookConfiguration.Load())
                     DiscordWebhooks.Add(fileInfo.Name.Substring(0, fileInfo.Name.LastIndexOf(".")), discordWebhookConfiguration);
                 else
-                    MelonLogger.Error("Failed to load Webhook file: " + fileInfo.FullName);
+                    ScreenshotManagerMod.Logger.Error("Failed to load Webhook file: " + fileInfo.FullName);
             }
-            MelonLogger.Msg("Loaded " + DiscordWebhooks.Count + " Discord Webhooks.");
+            ScreenshotManagerMod.Logger.Msg("Loaded " + DiscordWebhooks.Count + " Discord Webhooks.");
             return DiscordWebhooks.Count;
         }
 

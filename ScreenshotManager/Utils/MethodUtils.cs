@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using MelonLoader;
 using UnhollowerRuntimeLib.XrefScans;
 
 namespace ScreenshotManager.Utils
@@ -16,7 +15,7 @@ namespace ScreenshotManager.Utils
             }
             catch (Exception)
             {
-                MelonLogger.Error("Unable to find method for " + debugName);
+                ScreenshotManagerMod.Logger.Error("Unable to find method for " + debugName);
             }
             return null;
         }

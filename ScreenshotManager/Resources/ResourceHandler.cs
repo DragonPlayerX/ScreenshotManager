@@ -3,7 +3,6 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using MelonLoader;
 
 namespace ScreenshotManager.Resources
 {
@@ -11,7 +10,7 @@ namespace ScreenshotManager.Resources
     {
         public static void ExtractResource(string resourceName, string destination)
         {
-            MelonLogger.Msg("Extracting " + resourceName + "...");
+            ScreenshotManagerMod.Logger.Msg("Extracting " + resourceName + "...");
             try
             {
                 Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.Resources." + resourceName);
@@ -19,17 +18,17 @@ namespace ScreenshotManager.Resources
                 resource.CopyTo(file);
                 resource.Close();
                 file.Close();
-                MelonLogger.Msg("Successfully extracted " + resourceName);
+                ScreenshotManagerMod.Logger.Msg("Successfully extracted " + resourceName);
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
+                ScreenshotManagerMod.Logger.Error(e);
             }
         }
 
         public static bool CompareChecksums(string resourceName, string externalPath)
         {
-            MelonLogger.Msg("Validating checksums of external resource [" + resourceName + "]...");
+            ScreenshotManagerMod.Logger.Msg("Validating checksums of external resource [" + resourceName + "]...");
 
             Stream internalResource = Assembly.GetExecutingAssembly().GetManifestResourceStream("ScreenshotManager.Resources." + resourceName);
             Stream externalResource = new FileStream(externalPath + "/" + resourceName, FileMode.Open, FileAccess.Read);
@@ -41,8 +40,8 @@ namespace ScreenshotManager.Resources
             internalResource.Close();
             externalResource.Close();
 
-            MelonLogger.Msg("Internal Hash: " + internalHash);
-            MelonLogger.Msg("External Hash: " + externalHash);
+            ScreenshotManagerMod.Logger.Msg("Internal Hash: " + internalHash);
+            ScreenshotManagerMod.Logger.Msg("External Hash: " + externalHash);
 
             return internalHash.Equals(externalHash);
         }

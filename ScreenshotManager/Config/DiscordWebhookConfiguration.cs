@@ -2,7 +2,6 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
-using MelonLoader;
 
 namespace ScreenshotManager.Config
 {
@@ -47,7 +46,7 @@ namespace ScreenshotManager.Config
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
+                ScreenshotManagerMod.Logger.Error(e);
                 return false;
             }
             return true;

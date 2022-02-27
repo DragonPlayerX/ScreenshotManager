@@ -1,5 +1,4 @@
-﻿using MelonLoader;
-using System;
+﻿using System;
 using UnityEngine;
 
 namespace ScreenshotManager.Utils
@@ -38,7 +37,7 @@ namespace ScreenshotManager.Utils
                 }
                 catch (Exception ex)
                 {
-                    MelonLogger.Error("Error while invoking delegate:\n" + ex.ToString());
+                    ScreenshotManagerMod.Logger.Error("Error while invoking delegate:\n" + ex.ToString());
                 }
             }
         }

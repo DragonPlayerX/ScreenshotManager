@@ -243,7 +243,7 @@ namespace ScreenshotManager.Core
             }
             else
             {
-                MelonLogger.Warning("Failed to load image: " + file);
+                ScreenshotManagerMod.Logger.Warning("Failed to load image: " + file);
                 DestroyTexture(imageWrapper, size);
                 imageWrapper.Image.color = new Color(1, 1, 1, 1);
                 imageWrapper.Image.color = new Color(1, 1, 1, 1);
@@ -291,7 +291,7 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     return false;
                 }
                 return selectedFile.Directory.Name.Equals("Favorites");
@@ -308,7 +308,7 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     return;
                 }
 
@@ -353,7 +353,7 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     return;
                 }
                 Process.Start("explorer.exe", "/select, \"" + selectedFile.FullName + "\"");
@@ -367,7 +367,7 @@ namespace ScreenshotManager.Core
                 FileInfo fileInfo = fileChache[currentIndex];
                 if (!File.Exists(fileInfo.FullName))
                 {
-                    MelonLogger.Error("File not found: " + fileInfo.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + fileInfo.FullName);
                     return;
                 }
 
@@ -394,7 +394,7 @@ namespace ScreenshotManager.Core
                         bool result = FileDataHandler.WritePngChunk(fileInfo.FullName, data);
 
                         if (!result)
-                            MelonLogger.Warning("Failed to write image metadata. Image will be saved without any data.");
+                            ScreenshotManagerMod.Logger.Warning("Failed to write image metadata. Image will be saved without any data.");
                     }
                     else if (fileInfo.Extension.Equals(Extensions[1]))
                     {
@@ -418,21 +418,21 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     onError?.Invoke();
                     return;
                 }
 
-                MelonLogger.Msg("Uploading " + selectedFile.Name + " to VRChat Gallery...");
+                ScreenshotManagerMod.Logger.Msg("Uploading " + selectedFile.Name + " to VRChat Gallery...");
                 onUploading?.Invoke();
                 UnhollowerBaseLib.Il2CppStructArray<byte> data = File.ReadAllBytes(selectedFile.FullName);
                 ApiImage.UploadImage(data, new Action<ApiModelContainer<ApiFile>>(file =>
                 {
-                    MelonLogger.Msg("File " + selectedFile.Name + " was uploaded to VRChat Gallery.");
+                    ScreenshotManagerMod.Logger.Msg("File " + selectedFile.Name + " was uploaded to VRChat Gallery.");
                     onSuccess?.Invoke();
                 }), new Action<string>(err =>
                 {
-                    MelonLogger.Msg("Error while uploading file " + selectedFile.Name + " to VRChat Gallery. Error: " + err);
+                    ScreenshotManagerMod.Logger.Msg("Error while uploading file " + selectedFile.Name + " to VRChat Gallery. Error: " + err);
                     onError?.Invoke();
                 }));
             }
@@ -447,7 +447,7 @@ namespace ScreenshotManager.Core
                     if (webhook.Value.IsValid())
                         SendToDiscordWebhookInternal(new FileInfo(file), webhook.Key, webhook.Value);
                     else
-                        MelonLogger.Warning("The given Webhook URL [" + webhook.Key + "] is invalid.");
+                        ScreenshotManagerMod.Logger.Warning("The given Webhook URL [" + webhook.Key + "] is invalid.");
                 }
             }
         }
@@ -462,12 +462,12 @@ namespace ScreenshotManager.Core
         {
             if (!File.Exists(file.FullName))
             {
-                MelonLogger.Error("File not found: " + file.FullName);
+                ScreenshotManagerMod.Logger.Error("File not found: " + file.FullName);
                 onError?.Invoke();
                 return;
             }
 
-            MelonLogger.Msg("Uploading " + file.Name + " to Discord [" + webhookName + "]...");
+            ScreenshotManagerMod.Logger.Msg("Uploading " + file.Name + " to Discord [" + webhookName + "]...");
             onUploading?.Invoke();
 
             DateTime creationTime = Configuration.UseFileCreationTime.Value ? file.CreationTime : file.LastWriteTime;
@@ -516,12 +516,12 @@ namespace ScreenshotManager.Core
             {
                 if (hasExited && exitCode == 0)
                 {
-                    MelonLogger.Msg("File " + file.Name + " was uploaded to Discord [" + webhookName + "].");
+                    ScreenshotManagerMod.Logger.Msg("File " + file.Name + " was uploaded to Discord [" + webhookName + "].");
                     onSuccess?.Invoke();
                 }
                 else
                 {
-                    MelonLogger.Error("Error while uploading file " + file.Name + " to Discord [" + webhookName + "]. Process exited with " + exitCode);
+                    ScreenshotManagerMod.Logger.Error("Error while uploading file " + file.Name + " to Discord [" + webhookName + "]. Process exited with " + exitCode);
                     onError?.Invoke();
                 }
             }), "DiscordWebhook").NoAwait();
@@ -533,7 +533,7 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     return false;
                 }
 
@@ -549,7 +549,7 @@ namespace ScreenshotManager.Core
             {
                 if (!File.Exists(selectedFile.FullName))
                 {
-                    MelonLogger.Error("File not found: " + selectedFile.FullName);
+                    ScreenshotManagerMod.Logger.Error("File not found: " + selectedFile.FullName);
                     Update(false);
                     return;
                 }

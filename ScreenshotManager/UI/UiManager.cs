@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using MelonLoader;
-using UnhollowerRuntimeLib.XrefScans;
 using UnityEngine;
 using VRC.UI.Elements;
 using VRC.UI.Elements.Controls;
@@ -46,11 +44,11 @@ namespace ScreenshotManager.UI
             openSubMenuMethod = MethodUtils.FindMethod("Open SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_UIPage_TransitionType_") && method.GetParameters().Length == 2 && MethodUtils.IsUsingMethod(method, "Add") && !MethodUtils.IsUsingMethod(method, "Remove")));
             popSubMenuMethod = MethodUtils.FindMethod("Pop SubMenu", () => typeof(UIPage).GetMethods().First(method => method.Name.StartsWith("Method_Public_Void_") && method.GetParameters().Length == 0 && MethodUtils.IsUsingMethod(method, "Method_Public_Void_Predicate_1_UIPage_0") && !MethodUtils.IsUsingMethod(method, "ThrowArgumentOutOfRangeException") && MethodUtils.IsUsingMethod(method, "op_Equality")));
 #if DEBUG
-            MelonLogger.Msg("ModalAlert Method: " + modalAlertMethod?.Name);
-            MelonLogger.Msg("InfoPopup Method: " + infoPopupMethod?.Name);
-            MelonLogger.Msg("Popup Method: " + popupMethod?.Name);
-            MelonLogger.Msg("Open SubMenu Method: " + openSubMenuMethod?.Name);
-            MelonLogger.Msg("Pop SubMenu Method: " + popSubMenuMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("ModalAlert Method: " + modalAlertMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("InfoPopup Method: " + infoPopupMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("Popup Method: " + popupMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("Open SubMenu Method: " + openSubMenuMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("Pop SubMenu Method: " + popSubMenuMethod?.Name);
 #endif
         }
 

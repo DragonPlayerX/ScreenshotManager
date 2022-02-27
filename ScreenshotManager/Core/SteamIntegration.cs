@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
-using MelonLoader;
 
 namespace ScreenshotManager.Core
 {
@@ -20,37 +19,37 @@ namespace ScreenshotManager.Core
 
         public static void Init()
         {
-            MelonLogger.Msg("Loading Steam API...");
+            ScreenshotManagerMod.Logger.Msg("Loading Steam API...");
             try
             {
                 int pipe = SteamAPI_GetHSteamPipe();
                 int user = SteamAPI_GetHSteamUser();
-                MelonLogger.Msg("[Steam API] SteamPipe: " + pipe + " SteamUser: " + user);
+                ScreenshotManagerMod.Logger.Msg("[Steam API] SteamPipe: " + pipe + " SteamUser: " + user);
 
                 if (pipe == 0 || user == 0)
                 {
                     Enabled = false;
-                    MelonLogger.Warning("Steam API is invalid. The Steam integration is now disabled.");
+                    ScreenshotManagerMod.Logger.Warning("Steam API is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
                 IntPtr clientPtr = SteamInternal_CreateInterface(SteamClientVersion);
-                MelonLogger.Msg("[Steam API] SteamClient: " + clientPtr);
+                ScreenshotManagerMod.Logger.Msg("[Steam API] SteamClient: " + clientPtr);
 
                 if (clientPtr == IntPtr.Zero)
                 {
                     Enabled = false;
-                    MelonLogger.Warning("Steam Client is invalid. The Steam integration is now disabled.");
+                    ScreenshotManagerMod.Logger.Warning("Steam Client is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
                 steamScreenshotsInterfacePtr = ISteamClient_GetISteamScreenshots(clientPtr, user, pipe, ScreenshotInterfaceVersion);
-                MelonLogger.Msg("[Steam API] ScreenshotInterface: " + steamScreenshotsInterfacePtr);
+                ScreenshotManagerMod.Logger.Msg("[Steam API] ScreenshotInterface: " + steamScreenshotsInterfacePtr);
 
                 if (steamScreenshotsInterfacePtr == IntPtr.Zero)
                 {
                     Enabled = false;
-                    MelonLogger.Warning("Screenshot Interface is invalid. The Steam integration is now disabled.");
+                    ScreenshotManagerMod.Logger.Warning("Screenshot Interface is invalid. The Steam integration is now disabled.");
                     return;
                 }
 
@@ -61,12 +60,12 @@ namespace ScreenshotManager.Core
                 Enabled = false;
                 if (e is DllNotFoundException)
                 {
-                    MelonLogger.Warning("Steam API file not found. The Steam integration is now disabled.");
+                    ScreenshotManagerMod.Logger.Warning("Steam API file not found. The Steam integration is now disabled.");
                 }
                 else
                 {
-                    MelonLogger.Error(e);
-                    MelonLogger.Error("An error occurred while loading Steam API. The Steam integration is now disabled.");
+                    ScreenshotManagerMod.Logger.Error(e);
+                    ScreenshotManagerMod.Logger.Error("An error occurred while loading Steam API. The Steam integration is now disabled.");
                 }
             }
         }
@@ -79,7 +78,7 @@ namespace ScreenshotManager.Core
 
                 if (!fileInfo.Extension.ToLower().Equals(".png") && fileInfo.Extension.ToLower().Equals(".jpeg") && !fileInfo.Extension.ToLower().Equals(".jpg"))
                 {
-                    MelonLogger.Warning("Type of " + file + " has to be .png or .jpeg");
+                    ScreenshotManagerMod.Logger.Warning("Type of " + file + " has to be .png or .jpeg");
                     return false;
                 }
 
@@ -89,7 +88,7 @@ namespace ScreenshotManager.Core
                 Image image = Image.FromFile(file);
 
                 uint handle = SteamAPI_ISteamScreenshots_AddScreenshotToLibrary(steamScreenshotsInterfacePtr, tempFile, null, image.Width, image.Height);
-                MelonLogger.Msg("[Steam API] Screenshot Handle: " + handle + " Size: " + image.Width + "x" + image.Height);
+                ScreenshotManagerMod.Logger.Msg("[Steam API] Screenshot Handle: " + handle + " Size: " + image.Width + "x" + image.Height);
 
                 image.Dispose();
 
@@ -112,8 +111,8 @@ namespace ScreenshotManager.Core
             }
             catch (Exception e)
             {
-                MelonLogger.Error(e);
-                MelonLogger.Error("An error occurred while importing " + file + " to Steam.");
+                ScreenshotManagerMod.Logger.Error(e);
+                ScreenshotManagerMod.Logger.Error("An error occurred while importing " + file + " to Steam.");
                 return false;
             }
         }

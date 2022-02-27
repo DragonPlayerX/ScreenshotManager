@@ -24,11 +24,12 @@ namespace ScreenshotManager
         public static readonly string Version = "2.4.0";
 
         public static ScreenshotManagerMod Instance { get; private set; }
+        public static MelonLogger.Instance Logger => Instance.LoggerInstance;
 
         public override void OnApplicationStart()
         {
             Instance = this;
-            MelonLogger.Msg("Initializing ScreenshotManager " + Version + "...");
+            Logger.Msg("Initializing ScreenshotManager " + Version + "...");
 
             if (!Directory.Exists("UserData/ScreenshotManager/DiscordWebhooks"))
                 Directory.CreateDirectory("UserData/ScreenshotManager/DiscordWebhooks");
@@ -76,7 +77,7 @@ namespace ScreenshotManager
 
             SteamIntegration.Init();
 
-            MelonLogger.Msg("Running version " + Version + " of ScreenshotManager.");
+            Logger.Msg("Running version " + Version + " of ScreenshotManager.");
         }
 
         public override void OnUpdate() => TaskProvider.mainThreadQueue.Dequeue();

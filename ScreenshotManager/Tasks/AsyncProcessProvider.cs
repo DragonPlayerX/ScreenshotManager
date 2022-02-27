@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using MelonLoader;
 
 namespace ScreenshotManager.Tasks
 {
@@ -21,12 +20,12 @@ namespace ScreenshotManager.Tasks
             process.OutputDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
-                    MelonLogger.Msg(processName + " >> " + e.Data);
+                    ScreenshotManagerMod.Logger.Msg(processName + " >> " + e.Data);
             };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (e.Data != null)
-                    MelonLogger.Error(processName + " >> " + e.Data);
+                    ScreenshotManagerMod.Logger.Error(processName + " >> " + e.Data);
             };
 
             try
@@ -47,7 +46,7 @@ namespace ScreenshotManager.Tasks
             catch (Exception e)
             {
                 await TaskProvider.YieldToMainThread();
-                MelonLogger.Error(processName + " >> " + e);
+                ScreenshotManagerMod.Logger.Error(processName + " >> " + e);
                 onComplete(false, -1);
             }
         }

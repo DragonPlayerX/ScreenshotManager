@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MelonLoader;
 
 namespace ScreenshotManager.Tasks
 {
@@ -33,7 +32,7 @@ namespace ScreenshotManager.Tasks
             {
                 onComplete?.Invoke();
                 if (t.IsFaulted)
-                    MelonLogger.Error("Task raised exception: " + t.Exception);
+                    ScreenshotManagerMod.Logger.Error("Task raised exception: " + t.Exception);
             });
         }
     }

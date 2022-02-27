@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using MelonLoader;
 using HarmonyLib;
 using VRC.UserCamera;
 
@@ -25,7 +24,7 @@ namespace ScreenshotManager.Core
         public static async Task OrganizeAll()
         {
             IsWorking = true;
-            MelonLogger.Msg("Organizing files...");
+            ScreenshotManagerMod.Logger.Msg("Organizing files...");
             UiManager.PushQuickMenuAlert("Organizing files...");
 
             await TaskProvider.YieldToBackgroundTask();
@@ -49,14 +48,14 @@ namespace ScreenshotManager.Core
 
             await TaskProvider.YieldToMainThread();
             IsWorking = false;
-            MelonLogger.Msg("Organized " + movedFiles + " files.");
+            ScreenshotManagerMod.Logger.Msg("Organized " + movedFiles + " files.");
             UiManager.PushQuickMenuAlert("Organized " + movedFiles + " files.");
         }
 
         public static async Task Reset()
         {
             IsWorking = true;
-            MelonLogger.Msg("Reset organization...");
+            ScreenshotManagerMod.Logger.Msg("Reset organization...");
             UiManager.PushQuickMenuAlert("Reset organization...");
 
             await TaskProvider.YieldToBackgroundTask();
@@ -89,8 +88,8 @@ namespace ScreenshotManager.Core
             await TaskProvider.YieldToMainThread();
 
             IsWorking = false;
-            MelonLogger.Msg("Moved " + movedFiles + " files back to main directory.");
-            MelonLogger.Msg("Deleted " + deletedDirectories + " empty folders.");
+            ScreenshotManagerMod.Logger.Msg("Moved " + movedFiles + " files back to main directory.");
+            ScreenshotManagerMod.Logger.Msg("Deleted " + deletedDirectories + " empty folders.");
             UiManager.PushQuickMenuAlert("Moved " + movedFiles + " files back to main directory.");
         }
 
@@ -100,26 +99,26 @@ namespace ScreenshotManager.Core
             if (filePathMethod != null)
             {
                 ScreenshotManagerMod.Instance.HarmonyInstance.Patch(filePathMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FilePathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-                MelonLogger.Msg("Patched screenshot file method.");
+                ScreenshotManagerMod.Logger.Msg("Patched screenshot file method.");
             }
             else
             {
-                MelonLogger.Warning("Failed to patch the screenshot file method. Organization of files will break!");
+                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot file method. Organization of files will break!");
             }
 
             MethodInfo fileDirectoryMethod = MethodUtils.FindMethod("FolderName", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 0 && MethodUtils.ContainsString(method, "yyyy-MM")));
             if (fileDirectoryMethod != null)
             {
                 ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-                MelonLogger.Msg("Patched screenshot directory method.");
+                ScreenshotManagerMod.Logger.Msg("Patched screenshot directory method.");
             }
             else
             {
-                MelonLogger.Warning("Failed to patch the screenshot directory method. Organization of files will break!");
+                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot directory method. Organization of files will break!");
             }
 #if DEBUG
-            MelonLogger.Msg("FileName Method: " + filePathMethod?.Name);
-            MelonLogger.Msg("FolderName Method: " + fileDirectoryMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("FileName Method: " + filePathMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("FolderName Method: " + fileDirectoryMethod?.Name);
 #endif
         }
 
@@ -157,7 +156,7 @@ namespace ScreenshotManager.Core
             }
             catch
             {
-                MelonLogger.Warning("Failed to load image: " + filePath);
+                ScreenshotManagerMod.Logger.Warning("Failed to load image: " + filePath);
             }
             return CreateFileName(creationTime, width, height);
         }
