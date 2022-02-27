@@ -61,8 +61,6 @@ namespace ScreenshotManager.Config
             AutoSelectLatest = CreateEntry("AutoSelectLatest", false, "Auto Select Latest Image");
             ZoomFactor = CreateEntry("ZoomFactor", 4, "Zoom Factor");
 
-            Category.SaveToFile(false);
-
             if (!Directory.EnumerateFileSystemEntries("UserData/ScreenshotManager/DiscordWebhooks").Any())
                 ResourceHandler.ExtractResource("DiscordWebhookTemplate.cfg", "UserData/ScreenshotManager/DiscordWebhooks");
         }
