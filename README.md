@@ -46,27 +46,27 @@
 
 ## Texture loading
 
-You may experience a little bit of lag when going through your pictures (only really noticeable in multi view or with high resolution screenshots). This is caused by Unity's texture loading system which is not complete non-blocking. I also tried [ImageSharp](https://github.com/SixLabors/ImageSharp) for better texture loading but it turned out that my current solution works better than ImageSharp. If someone have an idea to improve this let me know it.
+You may experience a bit of lag when going through your pictures. (only noticeable in multi-view or with high-resolution screenshots). This is caused by Unity's texture loading system, which is not complete non-blocking. I also tried [ImageSharp](https://github.com/SixLabors/ImageSharp) for better texture loading, but it turned out that my current solution works better than ImageSharp. If someone has an idea to improve this, let me know.
 
 ## File Organization
 
-Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) wich is not managed anymore.
+Some code for the file organization comes from an older mod ([PhotoOrganization](https://github.com/dave-kun/PhotoOrganization)) which is not managed anymore.
 
-If you used the PhotoOrganization Mod before you may encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> click on "Reset Organization" and then click on "Manually Organization". The mod will reset all things (restore filenames and deleting old folders) and then create new folders and move the files.
+If you used the PhotoOrganization Mod before, you might encounter a problem that the images won't load. In this case please go to the "Screenshot Manager Menu" -> "File Organization" -> click on "Reset Organization" and then click on "Manually Organization"; The mod will reset all things (restore filenames and delete old folders) and then create new folders and move the files.
 
-You can fully modify the name of your images with the config entry called "FileOrganizationNameFormat". The default value is "VRChat_{timestamp}" and **must** contain "{timestamp}" otherwise it would get reset. Another possible option would be to put "{resolution}" into it, it will put the image resolution in the file name.
+You can completely modify the name of your images with the config entry called "FileOrganizationNameFormat"; The default value is "VRChat_{timestamp}" and **must** contain "{timestamp}" Otherwise, it would get reset. Another possible option would be to put "{resolution}" into it. It will put the image resolution in the file name.
 
 ## Discord Webhook
  
-You can enable the Discord Webhook (disabled by default) directly ingame or in the MelonPreferences file.
+You can enable the Discord Webhook (disabled by default) directly in the game or the MelonPreferences file.
 
-The code to send the Discord Webhook data is currently in an external executable file ([source code](DiscordWebhook)) wich is extracted at startup. The reason for this is that MelonLoader blocks all requests wich are send to discord.com to take action against malicious mods.
+The code to send the Discord Webhook data is currently in an external executable file ([source code](DiscordWebhook)), which is extracted at startup. The reason for this is that MelonLoader blocks all requests that are sent to discord.com to take action against malicious mods.
 
 ### How to create a Webhook?
 
-To create a Webhook you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks". You will see a template file for a Webhook. The name of the file will be displayed ingame and in the file you can define things like WebhookURL, Username, Message etc. To add multiple Webhooks you can simply copy the template and paste it in the same folder under a new name. In the ingame menu you have a scroll view of all Webhooks when you click on share.
+To create a Webhook, you have to go to "VRChat/UserData/ScreenshotManager/DiscordWebhooks" you will see a template file for a Webhook. The file name will be displayed in the game and the file. You can define things like WebhookURL, Username, Message, etc. To add multiple Webhooks, you can simply copy the template and paste it in the same folder under a new name. In the in-game menu, you have a scroll view of all Webhooks when you click on share.
 
-The webhook file supports some tags with these symbols "{" "}". You can find an example here [DiscordWebhookTemplate](https://github.com/DragonPlayerX/ScreenshotManager/blob/master/ScreenshotManager/Resources/DiscordWebhookTemplate.cfg)
+The webhook file supports some tags with these symbols "{" "}". You can find an example here. [DiscordWebhookTemplate](https://github.com/DragonPlayerX/ScreenshotManager/blob/master/ScreenshotManager/Resources/DiscordWebhookTemplate.cfg)
 
 Available tags for username and message of the webhook:
 
@@ -85,17 +85,17 @@ Available tags for username and message of the webhook:
 
 ### How does the compression works?
 
-The Webhook config file contains an property called "CompressionThreshold" (default value is -1). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
+The Webhook config file contains a property called "CompressionThreshold" (default value is -1). Already existing Webhook config files do not have this property. So it will use the default value, but you can add it to the config if you need to.
 
-You only have to set the compression threshold to the upload limit (in megabyte) of your Discord Webhook (Normal Server: 8 MB, Level 2 Boost: 50 MB, Level 3 Boost: 100 MB). Setting the value to -1 will result in disabling the compression.
+You only have to set the compression threshold to the upload limit (in megabytes) of your Discord Webhook (Normal Server: 8 MB, Level 2 Boost: 50 MB, Level 3 Boost: 100 MB). Setting the value to -1 will result in disabling the compression.
 
 The image compression will only work for **PNG** images because it converts these to **JPEG** images which are less quality but also less file size.
 
 ### How does automatic uploading works?
 
-The Webhook config file contains an property called "AutoUpload" (default value is false). Already existing Webhook config files does not have this property so it will use the default value but you can just add it to the config if you need to.
+The Webhook config file contains a property called "AutoUpload" (default value is false). Already existing Webhook config files do not have this property. So it will use the default value, but you can add it to the config if you need to.
 
-If you set the AutoUpload to true, it will automatically send a new taken picture after 3 seconds to the corresponding webhook.
+If you set the AutoUpload to true, it will automatically send a newly taken picture after 3 seconds to the corresponding webhook.
 
 ## Steam Integration
 
@@ -103,14 +103,14 @@ This mod uses the native Steam API and invokes internal screenshot methods to im
 
 ## Files & Time
 
-ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file but this could be reset if you copy files or maybe in some other cases. Otherwise the last write time gets modified when you edit the image outside of the game (ingame rotation does keep the old time value). Normally you should be fine with the default but you can change it in the MelonPreferences file.
+ScreenshotManager supports two ways to sort and handle your images. The first (and default) is the last write time of the file because it persists against file copy. The second one is the actual creation time of the file, but this could be reset if you copy files or maybe in some other cases. Otherwise, the last write time gets modified when you edit the image outside of the game (in-game rotation does keep the old-time value). Normally you should be fine with the default, but you can change it in the MelonPreferences file.
 
 ## Credits
 
-- I used very much code of [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods/tree/main/VRChatUtilityKit) by [loukylor](https://github.com/loukylor) to implement the needed features directly to this mod
+- I used a lot of code of [VRChatUtilityKit](https://github.com/loukylor/VRC-Mods/tree/main/VRChatUtilityKit) by [loukylor](https://github.com/loukylor) to implement the needed features directly to this mod
 - I used the async/await utilities from [UIExpansionKit](https://github.com/knah/VRCMods/blob/master/UIExpansionKit) by [knah](https://github.com/knah) as reference for my own implementation.
 - I used two methods related to PNG CRC from [LagFreeScreenshots](https://github.com/knah/VRCMods/blob/master/LagFreeScreenshots) by [knah](https://github.com/knah)
-- As mentioned before, i used [PhotoOrganization](https://github.com/dave-kun/PhotoOrganization) as my reference for the File Organization
+- As mentioned before, I used [PhotoOrganization](https://github.com/dave-kun/PhotoOrganization) as my reference for the File Organization
 
 ### Credits for all Icon Authors
 
