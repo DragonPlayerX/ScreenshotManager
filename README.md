@@ -97,6 +97,10 @@ The Webhook config file contains a property called "AutoUpload" (default value i
 
 If you set the AutoUpload to true, it will automatically send a new taken picture after 3 seconds to the corresponding webhook.
 
+### Custom Webhook URLs
+
+You can set the "AllowCustomURL" property in the webhook config to true if you want to disable the url filtering.
+
 ## Steam Integration
 
 This mod uses the native Steam API and invokes internal screenshot methods to import the image to steam. It's not modifying the screenshots.vdf like other screenshots importer might do.
