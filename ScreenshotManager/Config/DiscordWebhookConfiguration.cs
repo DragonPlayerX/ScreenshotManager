@@ -27,6 +27,7 @@ namespace ScreenshotManager.Config
         public Entry<string> CreationTimeFormat;
         public Entry<int> CompressionThreshold;
         public Entry<bool> AutoUpload;
+        public Entry<bool> AllowCustomURL;
 
         public DiscordWebhookConfiguration(string file) => this.file = file;
 
@@ -43,6 +44,7 @@ namespace ScreenshotManager.Config
                 CreationTimeFormat = new Entry<string>("CreationTimeFormat", "dd.MM.yyyy HH:mm:ss").Read(lines);
                 CompressionThreshold = new Entry<int>("CompressionThreshold", -1).Read(lines);
                 AutoUpload = new Entry<bool>("AutoUpload", false).Read(lines);
+                AllowCustomURL = new Entry<bool>("AllowCustomURL", false).Read(lines);
             }
             catch (Exception e)
             {
@@ -52,7 +54,7 @@ namespace ScreenshotManager.Config
             return true;
         }
 
-        public bool IsValid() => ValidURLs.Any(validUrl => WebhookURL.Value.StartsWith(validUrl));
+        public bool IsValid() => AllowCustomURL.Value || ValidURLs.Any(validUrl => WebhookURL.Value.StartsWith(validUrl));
 
         public class Entry<T>
         {
