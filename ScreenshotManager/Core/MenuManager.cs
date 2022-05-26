@@ -169,7 +169,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -182,7 +182,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -198,7 +198,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -211,7 +211,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -310,7 +310,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -331,7 +331,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -342,7 +342,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -370,7 +370,7 @@ namespace ScreenshotManager.Core
                 }
                 else
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Your selection is empty.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Your selection is empty.", null, "OK");
                 }
             }), Sprites["Actions"], "Actions", "Manage the current image", "Button_Actions");
 
@@ -388,7 +388,7 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -496,7 +496,7 @@ namespace ScreenshotManager.Core
                 }
                 else
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "You need VRC+ to use this function.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "You need VRC+ to use this function.", null, "OK");
                 }
             }), Sprites["Upload"], "Upload to Gallery", "Upload this image to your VRChat Gallery (requires VRC+)", "Button_Upload");
 
@@ -511,7 +511,7 @@ namespace ScreenshotManager.Core
             {
                 if (!SteamIntegration.Enabled)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Steam Integration is disabled because it failed to load the Steam API.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Steam Integration is disabled because it failed to load the Steam API.", null, "OK");
                     return;
                 }
 
@@ -544,21 +544,21 @@ namespace ScreenshotManager.Core
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
                 if (Configuration.FileOrganization.Value)
                     FileOrganization.OrganizeAll().NoAwait();
                 else
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "You have to enable File Organization in order to use this.", null, "OK");
             }), Sprites["Manually"], "Manually Organize", "Organize all files manually", "ManuallyFileOrganizationButton");
 
             SingleButton resetOrganizationButton = new SingleButton(new Action(() =>
             {
                 if (FileOrganization.IsWorking)
                 {
-                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null);
+                    UiManager.ShowQuickMenuInformationPopup("Warning", "Please wait until the file organization process is finished.", null, "OK");
                     return;
                 }
 
@@ -720,7 +720,7 @@ namespace ScreenshotManager.Core
                     }
                     else
                     {
-                        UiManager.ShowQuickMenuInformationPopup("Warning", "The given Webhook URL is invalid.", null);
+                        UiManager.ShowQuickMenuInformationPopup("Warning", "The given Webhook URL is invalid.", null, "OK");
                     }
                 }), webhookConfig.Key, "Send to " + webhookConfig.Key, "Button_" + webhookConfig.Key, buttonGroup.ButtonLayoutGroup.transform);
                 buttonGroup.AddButton(button);

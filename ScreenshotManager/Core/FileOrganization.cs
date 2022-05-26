@@ -21,6 +21,9 @@ namespace ScreenshotManager.Core
 
         public static bool IsWorking;
 
+        private static MethodInfo fileNameMethod;
+        private static MethodInfo filePathMethod;
+
         public static async Task OrganizeAll()
         {
             IsWorking = true;
@@ -95,48 +98,52 @@ namespace ScreenshotManager.Core
 
         public static void PatchMethod()
         {
-            MethodInfo filePathMethod = MethodUtils.FindMethod("FileName", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && MethodUtils.ContainsString(method, "{0}{1}VRChat_{2}x{3}_{4}.png")));
+            fileNameMethod = MethodUtils.FindMethod("FileName", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && MethodUtils.ContainsString(method, "VRChat_{0}x{1}_{2}.png")));
+            if (fileNameMethod != null)
+            {
+                ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileNameMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FileNamePatch), BindingFlags.Static | BindingFlags.NonPublic)));
+                ScreenshotManagerMod.Logger.Msg("Patched screenshot filename method.");
+            }
+            else
+            {
+                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot filename method. Organization of files will break!");
+            }
+
+            filePathMethod = MethodUtils.FindMethod("FilePath", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 2 && MethodUtils.ContainsString(method, "{0}{1}{2}")));
             if (filePathMethod != null)
             {
                 ScreenshotManagerMod.Instance.HarmonyInstance.Patch(filePathMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(FilePathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-                ScreenshotManagerMod.Logger.Msg("Patched screenshot file method.");
+                ScreenshotManagerMod.Logger.Msg("Patched screenshot filepath method.");
             }
             else
             {
-                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot file method. Organization of files will break!");
-            }
-
-            MethodInfo fileDirectoryMethod = MethodUtils.FindMethod("FolderName", () => typeof(CameraUtil).GetMethods(BindingFlags.Static | BindingFlags.Public).First(method => method.GetParameters().Length == 0 && MethodUtils.ContainsString(method, "yyyy-MM")));
-            if (fileDirectoryMethod != null)
-            {
-                ScreenshotManagerMod.Instance.HarmonyInstance.Patch(fileDirectoryMethod, new HarmonyMethod(typeof(FileOrganization).GetMethod(nameof(DirectoryPathPatch), BindingFlags.Static | BindingFlags.NonPublic)));
-                ScreenshotManagerMod.Logger.Msg("Patched screenshot directory method.");
-            }
-            else
-            {
-                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot directory method. Organization of files will break!");
+                ScreenshotManagerMod.Logger.Warning("Failed to patch the screenshot filepath method. Organization of files will break!");
             }
 #if DEBUG
-            ScreenshotManagerMod.Logger.Msg("FileName Method: " + filePathMethod?.Name);
-            ScreenshotManagerMod.Logger.Msg("FolderName Method: " + fileDirectoryMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("FileName Method: " + fileNameMethod?.Name);
+            ScreenshotManagerMod.Logger.Msg("FilePath Method: " + filePathMethod?.Name);
 #endif
+        }
+
+        private static bool FileNamePatch(ref string __result, int __0, int __1)
+        {
+            if (Configuration.FileOrganization.Value)
+                __result = CreateFileName(__0, __1) + ".png";
+            else
+                __result = "VRChat_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".png";
+            return false;
         }
 
         private static bool FilePathPatch(ref string __result, int __0, int __1)
         {
             if (Configuration.FileOrganization.Value)
-                __result = Configuration.ScreenshotDirectory.Value + "\\" + DateTime.Now.ToString(Configuration.FileOrganizationFolderTimeFormat.Value) + "\\" + CreateFileName(__0, __1) + ".png";
+                __result = Configuration.ScreenshotDirectory.Value + "\\" + DateTime.Now.ToString(Configuration.FileOrganizationFolderTimeFormat.Value) + "\\";
             else
-                __result = Configuration.ScreenshotDirectory.Value + "\\VRChat_" + DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss.fff") + ".png";
-            return false;
-        }
+                __result = Configuration.ScreenshotDirectory.Value + "\\";
 
-        private static bool DirectoryPathPatch(ref string __result)
-        {
-            if (Configuration.FileOrganization.Value)
-                __result = Configuration.ScreenshotDirectory.Value + "\\" + DateTime.Now.ToString(Configuration.FileOrganizationFolderTimeFormat.Value);
-            else
-                __result = Configuration.ScreenshotDirectory.Value;
+            Directory.CreateDirectory(__result);
+            __result += fileNameMethod.Invoke(null, new object[] { __0, __1 });
+
             return false;
         }
 
